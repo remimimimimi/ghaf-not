@@ -116,6 +116,51 @@ The captured screen looks like:
 ![tests.boot.normalBoot.x86_64-linux](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
 
 
+## Build
+
+Those two commands are equivalent:
+
+```
+$ nix-build
+$ nix-build -A runner
+```
+
+This will create a `result` symlink to a script. The script is just a call to
+qemu-kvm with the right parameters. In particular the sqashfs image, the
+kernel, and the initrd.
+
+
+## Run
+
+In my case, running the above script results in an error:
+
+```
+$ ./result
+qemu-system-x86_64: -net nic,vlan=0,model=virtio: 'vlan' is deprecated. Please use 'netdev' instead.
+qemu-system-x86_64: Invalid parameter 'dump'
+```
+
+I simply made a copy (`./runner`) and removed the `-net dump,vlan=0` line.
+
+```
+$ ./runner
+[...]
+<<< NotOS Stage 2 >>>
+
+setting up /etc...
+- runit: $Id: 25da3b86f7bed4038b8a039d2f8e8c9bbcf0822b $: booting.
+- runit: enter stage: /etc/runit/1
+ 3 Nov 10:59:00 ntpdate[106]: no servers can be used, exiting
+- runit: leave stage: /etc/runit/1
+- runit: enter stage: /etc/runit/2
+1.97 0.01
+```
+
+You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
+`ctrl-a c`, then e.g. type `screendump filename.ppm` to capture an image like
+the one in the test, then `quit` to terminate QEMU.
+
+
 <hr />
 
 Original README content follows.
