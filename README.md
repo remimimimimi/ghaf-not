@@ -161,6 +161,26 @@ You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
 the one in the test, then `quit` to terminate QEMU.
 
 
+## Linux build slave
+
+There is a build target to run a not-os VM as a Nix build machine. Its script
+doesn't have the `-net dump,vlan=0` line and adds a disk but otherwise is the
+same.
+
+It can be built with:
+
+```
+$ nix-build linux-build-slave.nix --arg sshKeyFile ~/.ssh/id_rsa.pub
+```
+
+Once running (see the Run section above), you can SSH into the VM:
+
+```
+$ ssh -p 2222 root@127.0.0.1
+-bash-4.4#
+```
+
+
 <hr />
 
 Original README content follows.
