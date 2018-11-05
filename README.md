@@ -2,8 +2,8 @@
 
 This is a branch of the not-os repository with some notes for myself (Thu).
 
-not-os is minimal OS based on the Linux kernel, BusyBox, and runit. It is also
-the build script to build such OS.
+not-os is a minimal OS based on the Linux kernel, BusyBox, and runit. It is
+also the build script to build such an OS.
 
 As a build tool, not-os uses nixpkgs and in particular the [NixOS module
 system](https://nixos.wiki/wiki/NixOS_Modules) to build the three main
@@ -210,6 +210,13 @@ The captured screen looks like:
   that NixOS provides,
 - and put it to good use to define a runit configuration (see the `runit.nix`
   file).
+
+
+## Related
+
+- [vpsAdminOS](https://vpsadminos.org/) is another Nix distribution based on
+  not-os. (It is meaningful to diff this repository against vpsAdminOS `os/`
+  directory.)
 
 
 <hr />
