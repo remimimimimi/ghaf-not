@@ -2,7 +2,7 @@
 
 This is a branch of the not-os repository with some notes for myself (Thu).
 
-not-os is a minimal OS based on the Linux kernel, BusyBox, and runit. It is
+not-os is a minimal OS based on the Linux kernel, coreutils, and runit. It is
 also the build script to build such an OS.
 
 As a build tool, not-os uses nixpkgs and in particular the [NixOS module
