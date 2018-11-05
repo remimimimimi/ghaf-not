@@ -1,17 +1,102 @@
 # not-os
 
-This is a branch with some notes for myself (Thu).
+This is a branch of the not-os repository with some notes for myself (Thu).
+
+not-os is minimal OS based on the Linux kernel, BusyBox, and runit. It is also
+the build script to build such OS.
+
+As a build tool, not-os uses nixpkgs and in particular the [NixOS module
+system](https://nixos.wiki/wiki/NixOS_Modules) to build the three main
+components of a Linux-based operating system:
+
+- a kernel (`config.system.build.kernel`)
+- an initrd (`system.build.initialRamdisk`)
+- a rootfs (`system.build.squashfs`)
+
+Given the three above derivations, it is then trivial to leverage Nix to
+generate the appropriate qemu-kvm invocation as a script. (You can search this
+repository for such invocations, or build the `default.nix` or the
+`linux-build-slave.nix` files and inspect the `result`.)
+
+The `tests/` directory shows also how to run a VM using the Nix testing
+infrastructure.
+
+
+## Build
+
+Those two commands are equivalent:
+
+```
+$ nix-build
+$ nix-build -A runner
+```
+
+This will create a `result` symlink to a script. The script is just a call to
+qemu-kvm with the right parameters. In particular the squashfs image, the
+kernel, and the initrd.
+
+
+## Run
+
+In my case, running the above script results in an error:
+
+```
+$ ./result
+qemu-system-x86_64: -net nic,vlan=0,model=virtio: 'vlan' is deprecated. Please use 'netdev' instead.
+qemu-system-x86_64: Invalid parameter 'dump'
+```
+
+I simply made a copy (`./runner`) and removed the `-net dump,vlan=0` line.
+
+```
+$ ./runner
+[...]
+<<< NotOS Stage 2 >>>
+
+setting up /etc...
+- runit: $Id: 25da3b86f7bed4038b8a039d2f8e8c9bbcf0822b $: booting.
+- runit: enter stage: /etc/runit/1
+ 3 Nov 10:59:00 ntpdate[106]: no servers can be used, exiting
+- runit: leave stage: /etc/runit/1
+- runit: enter stage: /etc/runit/2
+1.97 0.01
+```
+
+You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
+`ctrl-a c`, then e.g. type `screendump filename.ppm` to capture an image like
+the one in the test, then `quit` to terminate QEMU.
+
+
+## Linux build slave
+
+In addition of the default expression, there is also a build target to run a
+not-os VM as a Nix build machine. Its script doesn't have the `-net
+dump,vlan=0` line and adds a disk but otherwise is the same.
+
+It can be built with (adapt to provide your own SSH public key):
+
+```
+$ nix-build linux-build-slave.nix --arg sshKeyFile ~/.ssh/id_rsa.pub
+```
+
+Once running (see the [Run](#run) section above), you can SSH into the VM:
+
+```
+$ ssh -p 2222 root@127.0.0.1
+-bash-4.4#
+```
 
 
 ## Tests
 
-To ensure the resulting OS can boot under QEMU:
+To ensure the resulting OS can boot under QEMU, a test Nix expression is
+provided. The test can be run as follow:
 
 ```
 $ nix-build -A tests.boot.normalBoot.x86_64-linux release.nix
 ```
 
-After the build completes, the test is run and looks like:
+After the build completes, the test per-se is run and looks like:
 
 ```
 running the VM test script
@@ -116,69 +201,15 @@ The captured screen looks like:
 ![tests.boot.normalBoot.x86_64-linux](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
 
 
-## Build
+## Implementation notes
 
-Those two commands are equivalent:
-
-```
-$ nix-build
-$ nix-build -A runner
-```
-
-This will create a `result` symlink to a script. The script is just a call to
-qemu-kvm with the right parameters. In particular the sqashfs image, the
-kernel, and the initrd.
-
-
-## Run
-
-In my case, running the above script results in an error:
-
-```
-$ ./result
-qemu-system-x86_64: -net nic,vlan=0,model=virtio: 'vlan' is deprecated. Please use 'netdev' instead.
-qemu-system-x86_64: Invalid parameter 'dump'
-```
-
-I simply made a copy (`./runner`) and removed the `-net dump,vlan=0` line.
-
-```
-$ ./runner
-[...]
-<<< NotOS Stage 2 >>>
-
-setting up /etc...
-- runit: $Id: 25da3b86f7bed4038b8a039d2f8e8c9bbcf0822b $: booting.
-- runit: enter stage: /etc/runit/1
- 3 Nov 10:59:00 ntpdate[106]: no servers can be used, exiting
-- runit: leave stage: /etc/runit/1
-- runit: enter stage: /etc/runit/2
-1.97 0.01
-```
-
-You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
-`ctrl-a c`, then e.g. type `screendump filename.ppm` to capture an image like
-the one in the test, then `quit` to terminate QEMU.
-
-
-## Linux build slave
-
-There is a build target to run a not-os VM as a Nix build machine. Its script
-doesn't have the `-net dump,vlan=0` line and adds a disk but otherwise is the
-same.
-
-It can be built with:
-
-```
-$ nix-build linux-build-slave.nix --arg sshKeyFile ~/.ssh/id_rsa.pub
-```
-
-Once running (see the Run section above), you can SSH into the VM:
-
-```
-$ ssh -p 2222 root@127.0.0.1
--bash-4.4#
-```
+- not-os is an awesome example of the Nix ecosystem,
+- and in particular how easy it is to define a new rootfs.
+- It also shows the [`/etc`
+  managememt](https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/system/etc/etc.nix)
+  that NixOS provides,
+- and put it to good use to define a runit configuration (see the `runit.nix`
+  file).
 
 
 <hr />
