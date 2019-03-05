@@ -39,19 +39,6 @@ with lib;
       packageOverrides = self: {
         utillinux = self.utillinux.override { systemd = null; };
         dhcpcd = self.dhcpcd.override { udev = null; };
-        linux_rpixxx = self.linux_rpi.override {
-          extraConfig = ''
-            DEBUG_LL y
-            EARLY_PRINTK y
-            DEBUG_BCM2708_UART0 y
-            ARM_APPENDED_DTB n
-            ARM_ATAG_DTB_COMPAT n
-            ARCH_BCM2709 y
-            BCM2708_GPIO y
-            BCM2708_NOL2CACHE y
-            BCM2708_SPIDEV y
-          '';
-        };
       };
     };
     environment.etc = {
@@ -98,7 +85,7 @@ with lib;
       "ssh/ssh_host_ed25519_key" = { mode = "0600"; source = ./ssh/ssh_host_ed25519_key; };
     };
     boot.kernelParams = [ "systemConfig=${config.system.build.toplevel}" ];
-    boot.kernelPackages = if pkgs.system == "armv7l-linux" then pkgs.linuxPackages_rpi else pkgs.linuxPackages;
+    boot.kernelPackages = pkgs.linuxPackages;
     system.build.earlyMountScript = pkgs.writeScript "dummy" ''
     '';
     system.build.runvm = pkgs.writeScript "runner" ''
