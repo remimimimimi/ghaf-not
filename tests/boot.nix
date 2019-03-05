@@ -6,19 +6,6 @@ let
   config = (import ./.. { inherit system; extraModules = [ ./test-instrumentation.nix ../qemu.nix ]; }).config;
 in
 {
-  ipxeCrypto = makeTest {
-    name = "ipxe-crypto";
-    nodes = {};
-    testScript = ''
-      my $machine = createMachine({ qemuFlags => '-device virtio-rng-pci -kernel ${config.system.build.ipxe}/ipxe.lkrn -m 768 -net nic,model=e1000 -net user,tftp=${config.system.build.ftpdir}/' });
-      $machine->start;
-      sleep(6);
-      $machine->screenshot("test1");
-      $machine->sleep(1);
-      $machine->screenshot("test2");
-      $machine->shutdown;
-    '';
-  };
   normalBoot = makeTest {
     name = "normal-boot";
     nodes = {};

@@ -2,6 +2,9 @@
 
 This is a branch of the not-os repository with some notes for myself (Thu).
 
+I also removed some things (e.g. RPi and ipxe support) to make it easier to
+explore.
+
 not-os is a minimal OS based on the Linux kernel, coreutils, and runit. It is
 also the build script to build such an OS.
 
