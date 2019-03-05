@@ -72,6 +72,8 @@ the one in the test, then `quit` to terminate QEMU.
 
 ## Linux build slave
 
+(Removed in this branch.)
+
 In addition of the default expression, there is also a build target to run a
 not-os VM as a Nix build machine. Its script doesn't have the `-net
 dump,vlan=0` line and adds a disk but otherwise is the same.
