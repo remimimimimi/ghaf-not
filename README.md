@@ -201,6 +201,22 @@ The captured screen looks like:
 ![tests.boot.normalBoot.x86_64-linux](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
 
 
+## Experiments
+
+I tried to add `$machine->getTTYText(0);` after the screenshot to
+`tests/boot.nix` but it didn't work (missing awk).
+
+I added a service to `runit.nix` that sleep 10 seconds then call poweroff. This
+seems to work:
+
+```
+$ nix-build linux-build-slave.nix --arg sshKeyFile ~/.ssh/id_rsa.pub 
+/nix/store/xkswkf4hxp201a2pbh7pxl485pkixrvg-runner
+$ ./result | col -bx > a
+qemu-system-x86_64: -net nic,vlan=0,model=virtio: 'vlan' is deprecated. Please use 'netdev' instead.
+$ vim a
+```
+
 ## Implementation notes
 
 - not-os is an awesome example of the Nix ecosystem,
