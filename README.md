@@ -98,7 +98,7 @@ To ensure the resulting OS can boot under QEMU, a test Nix expression is
 provided. The test can be run as follow:
 
 ```
-$ nix-build -A tests.boot.normalBoot.x86_64-linux release.nix
+$ nix-build -A tests.boot.normalBoot.test release.nix
 ```
 
 After the build completes, the test per-se is run and looks like:
@@ -203,7 +203,7 @@ cleaning up
 
 The captured screen looks like:
 
-![tests.boot.normalBoot.x86_64-linux](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
+![tests.boot.normalBoot.test](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
 
 
 ## Experiments
