@@ -89,7 +89,7 @@ let
   dhcpHook = pkgs.writeScript "dhcpHook" ''
   #!${shell}
   '';
-  bootStage1 = pkgs.writeScript "stage1" ''
+  bootStage1 = pkgs.writeScript "stage-1" ''
     #!${shell}
     echo
     echo "[1;32m<<< NotOS Stage 1 >>>[0m"

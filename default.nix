@@ -37,10 +37,11 @@ rec {
   config = os.config;
   stage-1 = os.config.system.build.bootStage1;
   stage-2 = os.config.system.build.bootStage2;
-  runner = os.config.system.build.runvm;
+  runvm = os.config.system.build.runvm;
   kernel = os.config.system.build.kernel;
   initrd = os.config.system.build.initialRamdisk;
   rootfs = os.config.system.build.squashfs;
   toplevel = os.config.system.build.toplevel;
   path = os.config.system.path;
+  dist = os.config.system.build.dist;
 }

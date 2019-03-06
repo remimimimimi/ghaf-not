@@ -17,7 +17,7 @@ components of a Linux-based operating system:
 - a rootfs (`config.system.build.squashfs`)
 
 Given the three above derivations, it is then trivial to leverage Nix to
-generate the appropriate qemu-kvm invocation as a script, runner.
+generate the appropriate qemu-kvm invocation as a script, `runvm`.
 
 The `tests/` directory shows also how to run a VM using the Nix testing
 infrastructure.
@@ -30,7 +30,7 @@ described in this document.
 ## Build
 
 ```
-$ nix-build -A runner
+$ nix-build -A runvm
 ```
 
 This will create a `result` symlink to a script. The script is just a call to
@@ -41,7 +41,7 @@ the squashfs image.
 ## Run
 
 ```
-$ ./runner
+$ ./runvm
 [...]
 <<< NotOS Stage 2 >>>
 

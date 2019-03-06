@@ -87,7 +87,7 @@ with lib;
     boot.kernelPackages = pkgs.linuxPackages;
     system.build.earlyMountScript = pkgs.writeScript "dummy" ''
     '';
-    system.build.runvm = pkgs.writeScript "runner" ''
+    system.build.runvm = pkgs.writeScript "runvm" ''
       #!${pkgs.stdenv.shell}
       exec ${pkgs.qemu_kvm}/bin/qemu-kvm -name not-os -m 512 \
         -drive index=0,id=drive1,file=${config.system.build.squashfs},readonly,media=cdrom,format=raw,if=virtio \
@@ -96,7 +96,7 @@ with lib;
         -device virtio-rng-pci
     '';
 
-    system.build.dist = pkgs.runCommand "not-os-dist" {} ''
+    system.build.dist = pkgs.runCommand "dist" {} ''
       mkdir $out
       cp ${config.system.build.squashfs} $out/root.squashfs
       cp ${config.system.build.kernel}/*Image $out/kernel
@@ -112,7 +112,7 @@ with lib;
     '';
 
     # nix-build -A system.build.toplevel && du -h $(nix-store -qR result) --max=0 -BM|sort -n
-    system.build.toplevel = pkgs.runCommand "not-os" {
+    system.build.toplevel = pkgs.runCommand "toplevel" {
       activationScript = config.system.activationScripts.script;
     } ''
       mkdir $out
