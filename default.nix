@@ -33,8 +33,14 @@ let
   };
 in
 rec {
-  test1 = evalConfig [ configuration ];
-  runner = test1.config.system.build.runvm;
-  toplevel = test1.config.system.build.toplevel;
-  config = test1.config;
+  os = evalConfig [ configuration ];
+  config = os.config;
+  stage-1 = os.config.system.build.bootStage1;
+  stage-2 = os.config.system.build.bootStage2;
+  runner = os.config.system.build.runvm;
+  kernel = os.config.system.build.kernel;
+  initrd = os.config.system.build.initialRamdisk;
+  rootfs = os.config.system.build.squashfs;
+  toplevel = os.config.system.build.toplevel;
+  path = os.config.system.path;
 }

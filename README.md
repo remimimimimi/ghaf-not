@@ -13,43 +13,32 @@ system](https://nixos.wiki/wiki/NixOS_Modules) to build the three main
 components of a Linux-based operating system:
 
 - a kernel (`config.system.build.kernel`)
-- an initrd (`system.build.initialRamdisk`)
-- a rootfs (`system.build.squashfs`)
+- an initrd (`config.system.build.initialRamdisk`)
+- a rootfs (`config.system.build.squashfs`)
 
 Given the three above derivations, it is then trivial to leverage Nix to
-generate the appropriate qemu-kvm invocation as a script. (You can search this
-repository for such invocations, or build the `default.nix` or the
-`linux-build-slave.nix` files and inspect the `result`.)
+generate the appropriate qemu-kvm invocation as a script, runner.
 
 The `tests/` directory shows also how to run a VM using the Nix testing
 infrastructure.
 
+In addition to the three above derivations, a few intermediate results are
+defined in `default.nix` to make it easy to explore this project. They are also
+described in this document.
+
 
 ## Build
 
-Those two commands are equivalent:
-
 ```
-$ nix-build
 $ nix-build -A runner
 ```
 
 This will create a `result` symlink to a script. The script is just a call to
-qemu-kvm with the right parameters. In particular the squashfs image, the
-kernel, and the initrd.
+qemu-kvm with the right parameters. In particular the kernel, the initrd, and
+the squashfs image.
 
 
 ## Run
-
-In my case, running the above script results in an error:
-
-```
-$ ./result
-qemu-system-x86_64: -net nic,vlan=0,model=virtio: 'vlan' is deprecated. Please use 'netdev' instead.
-qemu-system-x86_64: Invalid parameter 'dump'
-```
-
-I simply made a copy (`./runner`) and removed the `-net dump,vlan=0` line.
 
 ```
 $ ./runner
@@ -204,6 +193,73 @@ cleaning up
 The captured screen looks like:
 
 ![tests.boot.normalBoot.test](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
+
+
+## stage-1
+
+```
+$ nix-build -A stage-1
+```
+
+stage-1 is a script defined as `config.system.build.bootStage1`. It is the
+content of the initrd.
+
+TODO Describe stage-1.
+
+The final action of stage-1 is to call `switch_root` to execute stage-2.
+
+TODO I should extract stage-1-init.sh to be similar to vpsadminos.
+
+
+## stage-2
+
+```
+$ nix-build -A stage-2
+```
+
+stage-2 is a script defined as `config.system.build.bootStage2`. It is the
+`init` script found in the rootfs, which is built as a squashfs image from
+toplevel. See below.
+
+
+## kernel
+
+
+## initrd
+
+
+## rootfs
+
+
+## toplevel
+
+```
+$ nix-build -A toplevel
+```
+
+The toplevel contains two scripts and a directory (actually a symlink):
+
+```
+$ ls /nix/store/q40j6y70nwhgazvhzrlzh79cjlfik7jv-not-os/
+activate  init  sw
+```
+
+- `activate` content is the value of `config.system.activationScripts.script`.
+  In particular it calls the `setup-etc.pl` script.
+- `init` content is the value of `stage-2`, which is
+  `stage-2-init.sh`, with `systemConfig` replaced by toplevel's path, and
+  `sw/bin/` set as its `$PATH`.
+  The `init` script mounts a few special filesystems, calls the `activate`
+  script, then execute `runit.
+- `sw` is a symlink to `path`, which contains only a `bin/` directory with
+  symlinks to base executables (e.g. `[`, `nix-build`, `yes`, ...).
+
+The toplevel is packaged as a squashfs image.
+
+The toplevel's path is sometimes called `systemConfig` or `sysconfig`.
+
+
+## path
 
 
 ## Experiments
