@@ -28,7 +28,7 @@ let
   evalConfig = modules: pkgs.lib.evalModules {
     prefix = [];
     check = true;
-    modules = modules ++ baseModules ++ [ pkgsModule ] ++ extraModules;
+    modules = modules ++ baseModules ++ extraModules;
     args = {};
   };
 in
