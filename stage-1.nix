@@ -121,7 +121,6 @@ let
       esac
     done
 
-    ${config.not-os.preMount}
     if [ $realroot = tmpfs ]; then
       mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
     else
@@ -159,10 +158,6 @@ let
 in
 {
   options = {
-    not-os.preMount = mkOption {
-      type = types.lines;
-      default = "";
-    };
   };
   config = {
     system.build.bootStage1 = bootStage1;
