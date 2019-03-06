@@ -22,7 +22,7 @@ let
       <nixpkgs/nixos/modules/misc/assertions.nix>
       <nixpkgs/nixos/modules/misc/lib.nix>
       <nixpkgs/nixos/modules/config/sysctl.nix>
-      ./systemd-compat.nix
+      ./nixos-compat.nix
       pkgsModule
   ];
   evalConfig = modules: pkgs.lib.evalModules {
@@ -33,9 +33,8 @@ let
   };
 in
 rec {
-  test1 = evalConfig [
-    configuration
-  ];
+  test1 = evalConfig [ configuration ];
   runner = test1.config.system.build.runvm;
+  toplevel = test1.config.system.build.toplevel;
   config = test1.config;
 }
