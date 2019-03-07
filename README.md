@@ -1,6 +1,8 @@
 # not-os
 
-This is a branch of the not-os repository with some notes for myself (Thu).
+This is a branch of the not-os repository with some notes for myself (Thu). In
+particular, it describes all the important artifacts involved in making a
+minimal Linux-based OS.
 
 I also removed some things (e.g. RPi and ipxe support) to make it easier to
 explore.
@@ -27,18 +29,17 @@ defined in `default.nix` to make it easy to explore this project. They are also
 described in this document.
 
 
-## Build
+## runvm
 
 ```
 $ nix-build -A runvm
 ```
 
-This will create a `result` symlink to a script. The script is just a call to
-qemu-kvm with the right parameters. In particular the kernel, the initrd, and
-the squashfs image.
+runvm is the main derivation defined in `default.nix`; everything else is a
+dependency.
 
-
-## Run
+The `result` is a symlink to a script calling qemu-kvm with the right
+parameters. In particular the kernel, the initrd, and the squashfs image.
 
 ```
 $ ./runvm
@@ -195,6 +196,20 @@ The captured screen looks like:
 ![tests.boot.normalBoot.test](https://github.com/noteed/not-os/raw/notes/images/vm-test-run-normal-boot.png)
 
 
+## extra-utils
+
+```
+$ nix-build -A extra-utils
+```
+
+extra-utils is a derivation packaging busybox, dhcpd, and their required
+libraries. They are modified using `patchelf` so the content of the derivation
+is self-sufficient.
+
+It is packaged with the stage-1 init script to create the initrd; it is
+everything the stage-1 init script can use to do its job.
+
+
 ## stage-1
 
 ```
@@ -206,9 +221,22 @@ content of the initrd.
 
 TODO Describe stage-1.
 
-The final action of stage-1 is to call `switch_root` to execute stage-2.
+It prepares the Nix store (at `/mnt/nix/store`, which will be at `/nix/store`
+once `switch_root` is performed).
 
-TODO I should extract stage-1-init.sh to be similar to vpsadminos.
+The final action of stage-1 is to call `switch_root` (using `/mnt` as the new
+root) to execute stage-2.
+
+In vpsadminos, the stage-1 exists as a script, `stage-1-init.sh` (just like
+`stage-2-init.sh`). It contains code testing a possible `nolive` flag, and thus
+the two branches of the `if` statement.
+
+In not-os, the flag is defined at build time so the generated script contains
+only the desired code. Similarly, the `overlay` kernel module is loaded only if
+necessay. The resulting script is less flexible but I like the idea of
+generating exactly what we decide.
+
+TODO I should rename the flag `nix` to `live` though.
 
 
 ## stage-2
@@ -226,6 +254,48 @@ toplevel. See below.
 
 
 ## initrd
+
+```
+$ nix-build -A initrd
+```
+
+An initrd is a temporary root file system living in memory. It is part of the
+startup process and provides an early user-space to prepare the system before
+the real root file system can be mounted.
+
+In particular in our case, it packages busybox. Given we are using a gzipped
+cpio archive with an init script, Wikipedia suggests we are actually using the
+initramfs scheme instead of the initrd scheme.
+
+To exploring the result, we can extract the content of the initrd in a
+temporary directory as follow:
+
+```
+$ mkdir tmp ; cd tmp
+$ zcat ../result/initrd | cpio -idmv
+$ find -maxdepth 3
+.
+./init
+./sys
+./proc
+./dev
+./nix
+./nix/store
+./nix/store/mpqsj1j686hd669qsdma2pr2b65b144q-stage-1
+./nix/store/70jf5sm6750jbbsirv6rqihwj22gsbvj-linux-4.14.84-shrunk
+./nix/store/flvbcnaszzif58xvdnbbsk8fxfz473k6-dhcpHook
+./nix/store/w5dbz7ig5s3g0c1xz7aqqs9klghhq4lm-extra-utils
+```
+
+- `init` is a symlink pointing to stage-1.
+- The `dev/`, `proc/`, and `sys/` directories are empty.
+- extra-utils (i.e. busybox, roughly) are packaged there together with a
+  collection of Linux kernel modules.
+- There is also a `dhcpHook` script (which is emtpty).
+
+nixpkgs code to create the initrd is at
+pkgs/build-support/kernel/make-initrd.nix and
+pkgs/build-support/kernel/make-initrd.sh
 
 
 ## rootfs

@@ -44,4 +44,5 @@ rec {
   toplevel = os.config.system.build.toplevel;
   path = os.config.system.path;
   dist = os.config.system.build.dist;
+  extra-utils = os.config.system.build.extraUtils;
 }
