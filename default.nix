@@ -35,6 +35,8 @@ in
 rec {
   os = evalConfig [ configuration ];
   config = os.config;
+
+  # Build with nix-build -A <attr>
   stage-1 = os.config.system.build.bootStage1;
   stage-2 = os.config.system.build.bootStage2;
   runvm = os.config.system.build.runvm;
@@ -45,4 +47,8 @@ rec {
   path = os.config.system.path;
   dist = os.config.system.build.dist;
   extra-utils = os.config.system.build.extraUtils;
+  shrunk = os.config.system.build.shrunk;
+
+  # Evaluate with nix-instantiate --eval --strict -A <attr>
+  root-modules = os.config.system.build.rootModules;
 }

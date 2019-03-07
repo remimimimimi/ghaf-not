@@ -2,11 +2,14 @@
 
 with lib;
 let
+  rootModules =
+    config.boot.initrd.availableKernelModules ++
+    config.boot.initrd.kernelModules;
   modules = pkgs.makeModulesClosure {
-    rootModules = config.boot.initrd.availableKernelModules ++ config.boot.initrd.kernelModules;
-    allowMissing = true;
+    rootModules = rootModules;
     kernel = config.system.build.kernel;
     firmware = config.hardware.firmware;
+    allowMissing = true;
   };
   dhcpcd = pkgs.dhcpcd.override { udev = null; };
   extraUtils = pkgs.runCommandCC "extra-utils"
@@ -163,7 +166,11 @@ in
     system.build.bootStage1 = bootStage1;
     system.build.initialRamdisk = initialRamdisk;
     system.build.extraUtils = extraUtils;
+    system.build.shrunk = modules;
+    system.build.rootModules = rootModules;
     boot.initrd.availableKernelModules = [ ];
-    boot.initrd.kernelModules = [ "tun" "loop" "squashfs" ] ++ (lib.optional config.not-os.nix "overlay");
+    boot.initrd.kernelModules =
+      [ "tun" "loop" "squashfs" ] ++
+      (lib.optional config.not-os.nix "overlay");
   };
 }

@@ -252,6 +252,34 @@ toplevel. See below.
 
 ## kernel
 
+```
+$ nix-build -A kernel
+```
+
+The kernel derivation results in an actual kernel, a bzImage file, but also in
+a set of kernel modules.
+
+The modules are packaged in the shrunk derivation, which itself is used to
+create the initrd.
+
+
+## shrunk
+
+```
+$ nix-build -A shrunk
+```
+
+This is a subset of the module tree produced in the kernel derivation. The
+subset is specified by the `rootModules` argument in stage-1.nix.
+
+That subset is packaged as part of the initrd.
+
+The lis of modules can be extracted with:
+
+```
+$ nix-instantiate --eval --strict -A root-modules
+```
+
 
 ## initrd
 
@@ -293,9 +321,13 @@ $ find -maxdepth 3
   collection of Linux kernel modules.
 - There is also a `dhcpHook` script (which is emtpty).
 
-nixpkgs code to create the initrd is at
-pkgs/build-support/kernel/make-initrd.nix and
-pkgs/build-support/kernel/make-initrd.sh
+The nixpkgs code to create the initrd is at
+`pkgs/build-support/kernel/make-initrd.nix` and
+`pkgs/build-support/kernel/make-initrd.sh`.
+
+The nixpkgs code to create the collection of modules is at
+`pkgs/build-support/kernel/modules-closure.nix` and
+`pkgs/build-support/kernel/modules-closure.sh`.
 
 
 ## rootfs
