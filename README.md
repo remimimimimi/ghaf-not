@@ -236,8 +236,6 @@ only the desired code. Similarly, the `overlay` kernel module is loaded only if
 necessay. The resulting script is less flexible but I like the idea of
 generating exactly what we decide.
 
-TODO I should rename the flag `nix` to `live` though.
-
 
 ## stage-2
 

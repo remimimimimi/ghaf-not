@@ -23,7 +23,7 @@ with lib;
         ignoreCollisions = true;
       };
     };
-    not-os.nix = mkOption {
+    not-os.live = mkOption {
       type = types.bool;
       description = "enable nix-daemon and a writeable store";
     };
@@ -34,7 +34,7 @@ with lib;
     };
   };
   config = {
-    environment.systemPackages = lib.optional config.not-os.nix pkgs.nix;
+    environment.systemPackages = lib.optional config.not-os.live pkgs.nix;
     nixpkgs.config = {
       packageOverrides = self: {
         utillinux = self.utillinux.override { systemd = null; };

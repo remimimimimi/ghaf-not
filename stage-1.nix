@@ -137,7 +137,7 @@ let
       lsblk
       lspci
       lsmod
-    ${if config.not-os.nix then ''
+    ${if config.not-os.live then ''
     # make the store writeable
     mkdir -p /mnt/nix/.ro-store /mnt/nix/.overlay-store /mnt/nix/store
     mount $root /mnt/nix/.ro-store -t squashfs
@@ -171,6 +171,6 @@ in
     boot.initrd.availableKernelModules = [ ];
     boot.initrd.kernelModules =
       [ "tun" "loop" "squashfs" ] ++
-      (lib.optional config.not-os.nix "overlay");
+      (lib.optional config.not-os.live "overlay");
   };
 }
