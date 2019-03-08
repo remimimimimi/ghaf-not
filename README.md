@@ -293,8 +293,8 @@ In particular in our case, it packages busybox. Given we are using a gzipped
 cpio archive with an init script, Wikipedia suggests we are actually using the
 initramfs scheme instead of the initrd scheme.
 
-To exploring the result, we can extract the content of the initrd in a
-temporary directory as follow:
+To explore the result, we can extract the content of the initrd in a temporary
+directory as follow:
 
 ```
 $ mkdir tmp ; cd tmp
@@ -329,6 +329,37 @@ The nixpkgs code to create the collection of modules is at
 
 
 ## rootfs
+
+```
+$ nix-build -A rootfs
+```
+
+The rootf derivation, defined as `config.system.build.squashfs`, creates a
+squashfs image. It contains the closures of toplevel and a registration file.
+
+To explore the result, we can extract the content of the rootfs in a temporary
+directory as follow:
+
+```
+$ mkdir tmp ; cd tmp
+$ unsquashfs $(readlink -fn ../result)
+$ find -maxdepth 2
+.
+./squashfs-root
+./squashfs-root/5f18ah2yzyf4mmnn8jqqb7aws91rw55v-ssh_host_rsa_key.pub
+./squashfs-root/wqfpawgsigwnz2bk1ygkfya7802jxl9c-iputils-20180629
+./squashfs-root/p54mjqlrngzzyb2892489b4hffgz03g2-aws-sdk-cpp-1.5.17
+./squashfs-root/jaiq6xgyhhl84826lrsxbgdy5sm9n8wx-nixos.conf
+...
+```
+
+The derivation is defined as a call to `nixpkgs/nixos/lib/make-squashfs.nix`,
+passing toplevel as argument. The closure is constructed by
+`nixpkgs/build-support/closure-info.nix`.
+
+A call to `nix-store --load-db` with the registration file found in the rootfs
+is done in a runit script. I woder if it could be done directly when the rootfs
+is mounted.
 
 
 ## toplevel
@@ -370,6 +401,18 @@ script, path provides a set of symlinks pointing to various executables in the
 Nix store to the stage-2 script.
 
 path is defined in the `system-path.nix` module.
+
+
+## dist
+
+The dist derivation creates a directory containing the kernel, the initrd, and
+the rootfs.
+
+It also contains a file with the kernel boot parameters, in particular the
+value for sysconfig (a path to toplevel), used in the stage-1 init script to
+resolve the stage-2 init script.
+
+I guess it could be baked into the script just as it is baked into stage-2.
 
 
 ## Experiments
