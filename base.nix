@@ -89,18 +89,23 @@ with lib;
     '';
     system.build.runvm = pkgs.writeScript "runvm" ''
       #!${pkgs.stdenv.shell}
-      exec ${pkgs.qemu_kvm}/bin/qemu-kvm -name not-os -m 512 \
+      exec ${pkgs.qemu_kvm}/bin/qemu-kvm \
+        -name not-os \
+        -m 512 \
+        -kernel ${config.system.build.kernel}/bzImage \
+        -initrd ${config.system.build.initialRamdisk}/initrd \
         -drive index=0,id=drive1,file=${config.system.build.squashfs},readonly,media=cdrom,format=raw,if=virtio \
-        -kernel ${config.system.build.kernel}/bzImage -initrd ${config.system.build.initialRamdisk}/initrd -nographic \
-        -append "console=ttyS0 ${toString config.boot.kernelParams} quiet panic=-1" -no-reboot \
+        -append "console=ttyS0 ${toString config.boot.kernelParams} quiet panic=-1" \
+        -nographic \
+        -no-reboot \
         -device virtio-rng-pci
     '';
 
     system.build.dist = pkgs.runCommand "dist" {} ''
       mkdir $out
-      cp ${config.system.build.squashfs} $out/root.squashfs
       cp ${config.system.build.kernel}/*Image $out/kernel
       cp ${config.system.build.initialRamdisk}/initrd $out/initrd
+      cp ${config.system.build.squashfs} $out/root.squashfs
       echo "${builtins.unsafeDiscardStringContext (toString config.boot.kernelParams)}" > $out/command-line
     '';
 
