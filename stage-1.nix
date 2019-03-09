@@ -78,33 +78,26 @@ let
   dhcpHook = pkgs.writeScript "dhcpHook" ''
   #!${shell}
   '';
-  bootStage1 = pkgs.writeScript "stage-1" ''
+  bootStage1Text = ''
     #!${shell}
-    echo
-    echo "[1;32m<<< NotOS Stage 1 >>>[0m"
-    echo
+    echo "[37;40mEntering stage-1...[0m"
+    echo @stage-1@
 
     export PATH=${extraUtils}/bin/
+
+    echo Creating base file systems...
     mkdir -p /proc /sys /dev /etc/udev /tmp /run/ /lib/ /mnt/ /var/log /bin
     mount -t devtmpfs devtmpfs /dev/
     mount -t proc proc /proc
     mount -t sysfs sysfs /sys
 
-    ln -sv ${shell} /bin/sh
+    ln -s ${shell} /bin/sh
     ln -s ${modules}/lib/modules /lib/modules
-
-    for x in ${lib.concatStringsSep " " config.boot.initrd.kernelModules}; do
-      modprobe $x
-    done
 
     root=/dev/vda
     realroot=tmpfs
     for o in $(cat /proc/cmdline); do
       case $o in
-        systemConfig=*)
-          set -- $(IFS==; echo $o)
-          sysconfig=$2
-          ;;
         root=*)
           set -- $(IFS==; echo $o)
           root=$2
@@ -124,31 +117,45 @@ let
       esac
     done
 
-    if [ $realroot = tmpfs ]; then
-      mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
-    else
-      mount $realroot /mnt || exec ${shell}
-    fi
+    echo Using ${extraUtils}...
+    echo Using ${modules}...
+    echo Using ${config.system.build.toplevel}...
+
+    for x in ${lib.concatStringsSep " " config.boot.initrd.kernelModules}; do
+      echo Loading kernel module $x...
+      modprobe $x
+    done
+
+    mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
     chmod 755 /mnt/
     mkdir -p /mnt/nix/store/
 
     ${if config.not-os.live then ''
-    # make the store writeable
+    echo Creating writable Nix store...
     mkdir -p /mnt/nix/.ro-store /mnt/nix/.overlay-store /mnt/nix/store
     mount $root /mnt/nix/.ro-store -t squashfs
-    if [ $realroot = $1 ]; then
-      mount tmpfs -t tmpfs /mnt/nix/.overlay-store -o size=1G
-    fi
-    mkdir -pv /mnt/nix/.overlay-store/work /mnt/nix/.overlay-store/rw
+    mount tmpfs -t tmpfs /mnt/nix/.overlay-store -o size=1G
+    mkdir -p /mnt/nix/.overlay-store/work /mnt/nix/.overlay-store/rw
     modprobe overlay
     mount -t overlay overlay -o lowerdir=/mnt/nix/.ro-store,upperdir=/mnt/nix/.overlay-store/rw,workdir=/mnt/nix/.overlay-store/work /mnt/nix/store
     '' else ''
-    # readonly store
+    echo Creating readonly Nix store...
     mount $root /mnt/nix/store/ -t squashfs
     ''}
 
-    exec env -i $(type -P switch_root) /mnt/ $sysconfig/init
+    echo Switching root filesystem...
+    exec env -i $(type -P switch_root) /mnt/ ${config.system.build.bootStage2}
     exec ${shell}
+  '';
+  bootStage1 = pkgs.runCommand "stage-1" {
+    text = bootStage1Text;
+    passAsFile = [ "text" ];
+    preferLocalBuild = true;
+    allowSubstitutes = false;
+  } ''
+    mv "$textPath" "$out"
+    substituteInPlace $out --subst-var-by stage-1 $out
+    chmod +x "$out"
   '';
   initialRamdisk = pkgs.makeInitrd {
     contents = [ { object = bootStage1; symlink = "/init"; } ];

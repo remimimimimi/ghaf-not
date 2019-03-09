@@ -83,7 +83,7 @@ with lib;
       "ssh/ssh_host_ed25519_key.pub".source = ./ssh/ssh_host_ed25519_key.pub;
       "ssh/ssh_host_ed25519_key" = { mode = "0600"; source = ./ssh/ssh_host_ed25519_key; };
     };
-    boot.kernelParams = [ "systemConfig=${config.system.build.toplevel}" ];
+    boot.kernelParams = [ ];
     boot.kernelPackages = pkgs.linuxPackages;
     system.build.earlyMountScript = pkgs.writeScript "dummy" ''
     '';
@@ -123,8 +123,6 @@ with lib;
       activationScript = config.system.activationScripts.script;
     } ''
       mkdir $out
-      cp ${config.system.build.bootStage2} $out/init
-      substituteInPlace $out/init --subst-var-by systemConfig $out
       ln -s ${config.system.path} $out/sw
       echo "$activationScript" > $out/activate
       substituteInPlace $out/activate --subst-var out
@@ -133,7 +131,7 @@ with lib;
     '';
     # nix-build -A squashfs && ls -lLh result
     system.build.squashfs = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
-      storeContents = [ config.system.build.toplevel ];
+      storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
   };
 }

@@ -23,10 +23,18 @@ with lib;
     };
   };
   config = {
-    system.build.bootStage2 = pkgs.substituteAll {
-      src = ./stage-2-init.sh;
-      isExecutable = true;
-      path = config.system.path;
-    };
+    system.build.bootStage2 = pkgs.runCommand "stage-2" {
+      text = ./stage-2-init.sh;
+      passAsFile = [ "text" ];
+      preferLocalBuild = true;
+      allowSubstitutes = false;
+    } ''
+      cp ${./stage-2-init.sh} "$out"
+      substituteInPlace $out --subst-var shell
+      substituteInPlace $out --subst-var-by stage-2 $out
+      substituteInPlace $out --subst-var-by path ${config.system.path}
+      substituteInPlace $out --subst-var-by toplevel ${config.system.build.toplevel}
+      chmod +x "$out"
+    '';
   };
 }

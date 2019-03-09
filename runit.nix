@@ -30,14 +30,16 @@ in
     "runit/1".source = pkgs.writeScript "1" ''
       #!${pkgs.stdenv.shell}
       ${lib.optionalString config.not-os.simpleStaticIp ''
+      echo Setting static IP address...
       ip addr add 10.0.2.15 dev eth0
       ip link set eth0 up
       ip route add 10.0.2.0/24 dev eth0
-      ip  route add default via 10.0.2.2 dev eth0
+      ip route add default via 10.0.2.2 dev eth0
       ''}
       mkdir /bin/
       ln -s ${pkgs.stdenv.shell} /bin/sh
-      ${pkgs.ntp}/bin/ntpdate 192.168.2.1
+      echo Running ntpdate...
+      ${pkgs.ntp}/bin/ntpdate pool.ntp.org
 
       # disable DPMS on tty's
       echo -ne "\033[9;0]" > /dev/tty0
@@ -48,34 +50,38 @@ in
     '';
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh
-      cat /proc/uptime
+      # cat /proc/uptime
+      echo Running runsvdir...
       exec runsvdir -P /etc/service
     '';
     "runit/3".source = pkgs.writeScript "3" ''
       #!/bin/sh
-      echo and down we go
+      echo Shutting down...
     '';
     "service/sshd/run".source = pkgs.writeScript "sshd_run" ''
       #!/bin/sh
-      ${pkgs.openssh}/bin/sshd -f ${sshd_config}
+      echo Running sshd...
+      ${pkgs.openssh}/bin/sshd -D -f ${sshd_config}
     '';
     "service/rngd/run".source = pkgs.writeScript "rngd" ''
       #!/bin/sh
+      echo Running rngd...
       export PATH=$PATH:${pkgs.rng_tools}/bin
-      exec rngd -r /dev/hwrng
+      exec rngd -f -r /dev/hwrng
     '';
     "service/nix/run".source = pkgs.writeScript "nix" ''
       #!/bin/sh
+      echo Running nix-daemon...
       nix-store --load-db < /nix/store/nix-path-registration
       nix-daemon
     '';
-    "service/autohalt/run".source = pkgs.writeScript "autohalt" ''
-      #!/bin/sh
-      for i in 1 2 3 4 5 6 7 8 9 ; do
-        echo $i
-        sleep 1
-      done
-      runit-init 0
-    '';
+    #"service/autohalt/run".source = pkgs.writeScript "autohalt" ''
+    #  #!/bin/sh
+    #  for i in 1 2 3 4 5 6 7 8 9 10; do
+    #    echo $i
+    #    sleep 10
+    #  done
+    #  runit-init 0
+    #'';
   };
 }

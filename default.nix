@@ -51,4 +51,5 @@ rec {
 
   # Evaluate with nix-instantiate --eval --strict -A <attr>
   root-modules = os.config.system.build.rootModules;
+  cmdline = os.config.boot.kernelParams;
 }

@@ -1,12 +1,10 @@
 #!@shell@
 
-systemConfig=@systemConfig@
 export PATH=@path@/bin/
 
-# Print a greeting.
 echo
-echo -e "\e[1;32m<<< NotOS Stage 2 >>>\e[0m"
-echo
+echo "[37;40mEntering stage-2...[0m"
+echo @stage-2@
 
 mkdir -p /proc /sys /dev /tmp /var/log /etc /root /run /nix/var/nix/gcroots
 mount -t proc proc /proc
@@ -17,6 +15,6 @@ mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /run
 mount -t tmpfs tmpfs /dev/shm
 
-$systemConfig/activate
+@toplevel@/activate
 
 exec runit
