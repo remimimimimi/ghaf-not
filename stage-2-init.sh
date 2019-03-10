@@ -6,6 +6,7 @@ echo
 echo "[37;40mEntering stage-2...[0m"
 echo @stage-2@
 
+echo Creating base file systems...
 mkdir -p /proc /sys /dev /tmp /var/log /etc /root /run /nix/var/nix/gcroots
 mount -t proc proc /proc
 mount -t sysfs sys /sys
@@ -15,6 +16,7 @@ mount -t devpts devpts /dev/pts
 mount -t tmpfs tmpfs /run
 mount -t tmpfs tmpfs /dev/shm
 
+echo Using @toplevel@...
 @toplevel@/activate
 
 exec runit
