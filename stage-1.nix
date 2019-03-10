@@ -157,8 +157,19 @@ let
     substituteInPlace $out --subst-var-by stage-1 $out
     chmod +x "$out"
   '';
-  initialRamdisk = pkgs.makeInitrd {
+  makeInitrd = { contents, compressor ? "gzip -9n", prepend ? [ ], keepStorePath }:
+    pkgs.callPackage build-support/kernel/make-initrd.nix {
+      inherit contents compressor prepend keepStorePath;
+    };
+  initialRamdisk = makeInitrd {
     contents = [ { object = bootStage1; symlink = "/init"; } ];
+    # Don't depend on bootStage2; we only want the path.
+    keepStorePath = pkgs.writeText "keep-store-path" ''
+      -shrunk$
+      -dhcpHook$
+      -stage-1$
+      -extra-utils$
+    '';
   };
 in
 {
