@@ -2,10 +2,10 @@
 , nixpkgs ? <nixpkgs>
 , extraModules ? []
 , system ? builtins.currentSystem
-, platform ? null }:
+}:
 
 let
-  pkgs = import nixpkgs { inherit system; platform = platform; config = {}; };
+  pkgs = import nixpkgs { inherit system; config = {}; };
   pkgsModule = rec {
     _file = ./default.nix;
     key = _file;
