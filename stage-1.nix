@@ -143,7 +143,8 @@ let
     ''}
 
     echo Switching root filesystem...
-    exec env -i $(type -P switch_root) /mnt/ ${config.system.build.bootStage2}
+    exec env -i $(type -P switch_root) /mnt/ \
+      ${builtins.unsafeDiscardStringContext (toString config.system.build.bootStage2)}
     exec ${shell}
   '';
   bootStage1 = pkgs.runCommand "stage-1" {
@@ -160,15 +161,8 @@ let
     pkgs.callPackage build-support/kernel/make-initrd.nix {
       inherit contents compressor prepend keepStorePath;
     };
-  initialRamdisk = makeInitrd {
+  initialRamdisk = pkgs.makeInitrd {
     contents = [ { object = bootStage1; symlink = "/init"; } ];
-    # Don't depend on bootStage2; we only want the path.
-    keepStorePath = pkgs.writeText "keep-store-path" ''
-      -shrunk$
-      -dhcpHook$
-      -stage-1$
-      -extra-utils$
-    '';
   };
 in
 {
