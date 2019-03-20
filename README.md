@@ -7,8 +7,8 @@ minimal Linux-based OS.
 I also removed some things (e.g. RPi and ipxe support) to make it easier to
 explore.
 
-not-os is a minimal OS based on the Linux kernel, coreutils, and runit. It is
-also the build script to build such an OS.
+not-os is a minimal OS based on the Linux kernel, coreutils, runit, and Nix. It
+is also the build script to build such an OS.
 
 As a build tool, not-os uses nixpkgs and in particular the [NixOS module
 system](https://nixos.wiki/wiki/NixOS_Modules) to build the three main
@@ -26,38 +26,11 @@ infrastructure.
 
 In addition to the three above derivations, a few intermediate results are
 defined in `default.nix` to make it easy to explore this project. They are also
-described in this document.
-
-
-## runvm
+described in the `site/` directory, which itself can be built with
 
 ```
-$ nix-build -A runvm
+$ nix-build site/ --attr all
 ```
-
-runvm is the main derivation defined in `default.nix`; everything else is a
-dependency.
-
-The `result` is a symlink to a script calling qemu-kvm with the right
-parameters. In particular the kernel, the initrd, and the squashfs image.
-
-```
-$ ./runvm
-[...]
-<<< NotOS Stage 2 >>>
-
-setting up /etc...
-- runit: $Id: 25da3b86f7bed4038b8a039d2f8e8c9bbcf0822b $: booting.
-- runit: enter stage: /etc/runit/1
- 3 Nov 10:59:00 ntpdate[106]: no servers can be used, exiting
-- runit: leave stage: /etc/runit/1
-- runit: enter stage: /etc/runit/2
-1.97 0.01
-```
-
-You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
-`ctrl-a c`, then e.g. type `screendump filename.ppm` to capture an image like
-the one in the test, then `quit` to terminate QEMU.
 
 
 ## Linux build slave
@@ -277,55 +250,6 @@ The lis of modules can be extracted with:
 ```
 $ nix-instantiate --eval --strict -A root-modules
 ```
-
-
-## initrd
-
-```
-$ nix-build -A initrd
-```
-
-An initrd is a temporary root file system living in memory. It is part of the
-startup process and provides an early user-space to prepare the system before
-the real root file system can be mounted.
-
-In particular in our case, it packages busybox. Given we are using a gzipped
-cpio archive with an init script, Wikipedia suggests we are actually using the
-initramfs scheme instead of the initrd scheme.
-
-To explore the result, we can extract the content of the initrd in a temporary
-directory as follow:
-
-```
-$ mkdir tmp ; cd tmp
-$ zcat ../result/initrd | cpio -idmv
-$ find -maxdepth 3
-.
-./init
-./sys
-./proc
-./dev
-./nix
-./nix/store
-./nix/store/mpqsj1j686hd669qsdma2pr2b65b144q-stage-1
-./nix/store/70jf5sm6750jbbsirv6rqihwj22gsbvj-linux-4.14.84-shrunk
-./nix/store/flvbcnaszzif58xvdnbbsk8fxfz473k6-dhcpHook
-./nix/store/w5dbz7ig5s3g0c1xz7aqqs9klghhq4lm-extra-utils
-```
-
-- `init` is a symlink pointing to stage-1.
-- The `dev/`, `proc/`, and `sys/` directories are empty.
-- extra-utils (i.e. busybox, roughly) are packaged there together with a
-  collection of Linux kernel modules.
-- There is also a `dhcpHook` script (which is emtpty).
-
-The nixpkgs code to create the initrd is at
-`pkgs/build-support/kernel/make-initrd.nix` and
-`pkgs/build-support/kernel/make-initrd.sh`.
-
-The nixpkgs code to create the collection of modules is at
-`pkgs/build-support/kernel/modules-closure.nix` and
-`pkgs/build-support/kernel/modules-closure.sh`.
 
 
 ## rootfs
