@@ -1,6 +1,7 @@
 { pkgs, config, lib, ... }:
 
 with lib;
+with import ./templating.nix { inherit pkgs; };
 
 {
   options = {
@@ -89,19 +90,15 @@ with lib;
     '';
 
     system.build.runvm =
-      let
-        interpoletateFile = fn:
-          scopedImport { inherit pkgs config ; }
-            (builtins.toFile "quoted"
-              ("''\n" + builtins.readFile fn + "\n''\n"));
-      in pkgs.writeScript "runvm" (interpoletateFile ./strings/runvm.sh);
+      writeInterpolatedFile "runvm" { inherit pkgs config; } ./strings/runvm.sh;
 
     system.build.dist = pkgs.runCommand "dist" {} ''
       mkdir $out
       cp ${config.system.build.kernel}/*Image $out/kernel
       cp ${config.system.build.initialRamdisk}/initrd $out/initrd
       cp ${config.system.build.squashfs} $out/root.squashfs
-      echo "${builtins.unsafeDiscardStringContext (toString config.boot.kernelParams)}" > $out/command-line
+      echo "${builtins.unsafeDiscardStringContext (toString config.boot.kernelParams)}" \
+        > $out/command-line
     '';
 
     system.activationScripts.users = ''
