@@ -30,9 +30,9 @@ sed \
 -e \
 's@.{config.system.build.initialRamdisk}/initrd@<a href=initrd.html>\0 \&#x24B7</a>@' \
 -e \
-'s@\(.{config.system.build.squashfs}\),@<a href=squashfs.html>\1 \&#x24B8,\n    </a>@' \
+'s@\(.{config.system.build.squashfs}\),@<a href=rootfs.html>\1 \&#x24B8,\n    </a>@' \
 -e \
-'s@\(.{toString config.boot.kernelParams}\)@<a href=squashfs.html>\1 \&#x24B9\n   </a>@' \
+'s@\(.{toString config.boot.kernelParams}\)@<a href=cmdline.html>\1 \&#x24B9\n   </a>@' \
 -e \
 's@10.0.2.2,@\0\n    </a>@' \
 ${../strings/runvm.sh} > $out
@@ -49,6 +49,51 @@ echo -n $out >> $out
   md.initrd = pkgs.substituteAll {
     src = ./initrd.md;
     result = artefacts.initrd;
+    inherit (hypertext) footer;
+  };
+  md.kernel = pkgs.substituteAll {
+    src = ./kernel.md;
+    result = artefacts.kernel;
+    inherit (hypertext) footer;
+  };
+  md.rootfs = pkgs.substituteAll {
+    src = ./rootfs.md;
+    result = artefacts.rootfs;
+    inherit (hypertext) footer;
+  };
+  md.stage-1 = pkgs.substituteAll {
+    src = ./stage-1.md;
+    result = artefacts.stage-1;
+    inherit (hypertext) footer;
+  };
+  md.stage-2 = pkgs.substituteAll {
+    src = ./stage-2.md;
+    result = artefacts.stage-2;
+    inherit (hypertext) footer;
+  };
+  md.dist = pkgs.substituteAll {
+    src = ./dist.md;
+    result = artefacts.dist;
+    inherit (hypertext) footer;
+  };
+  md.extra-utils = pkgs.substituteAll {
+    src = ./extra-utils.md;
+    result = artefacts.extra-utils;
+    inherit (hypertext) footer;
+  };
+  md.path = pkgs.substituteAll {
+    src = ./path.md;
+    result = artefacts.path;
+    inherit (hypertext) footer;
+  };
+  md.shrunk = pkgs.substituteAll {
+    src = ./shrunk.md;
+    result = artefacts.shrunk;
+    inherit (hypertext) footer;
+  };
+  md.toplevel = pkgs.substituteAll {
+    src = ./toplevel.md;
+    result = artefacts.toplevel;
     inherit (hypertext) footer;
   };
   md.default = pkgs.runCommand "default.md" {} ''
@@ -69,7 +114,16 @@ echo -n $out >> $out
     mkdir $out
     cp ${md.index} $out/index.md
     cp ${md.runvm} $out/runvm.md
+    cp ${md.kernel} $out/kernel.md
     cp ${md.initrd} $out/initrd.md
+    cp ${md.rootfs} $out/rootfs.md
+    cp ${md.stage-1} $out/stage-1.md
+    cp ${md.stage-2} $out/stage-2.md
+    cp ${md.dist} $out/dist.md
+    cp ${md.extra-utils} $out/extra-utils.md
+    cp ${md.path} $out/path.md
+    cp ${md.shrunk} $out/shrunk.md
+    cp ${md.toplevel} $out/toplevel.md
     cp ${md.default} $out/default.md
   '';
 }

@@ -49,6 +49,5 @@ You can type `ctrl-a x` to quit. You can also enter the QEMU monitor with
 the one in the test, then `quit` to terminate QEMU.
 
 
-
 <br />
 @footer@

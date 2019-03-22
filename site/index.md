@@ -44,18 +44,30 @@ command as they appear at the top of each page.*
   <li class=mr4><a href="/projects/not-os/kernel.html">kernel</a>
   <li class=mr4><a href="/projects/not-os/initrd.html">initrd</a>
   <li class=mr4><a href="/projects/not-os/rootfs.html">rootfs</a>
+  <li class=mr4><a href="/projects/not-os/stage-1.html">stage-1</a>
+  <li class=mr4><a href="/projects/not-os/stage-2.html">stage-2</a>
+  <li class=mr4><a href="/projects/not-os/dist.html">dist</a>
+  <li class=mr4><a href="/projects/not-os/extra-utils.html">extra-utils</a>
+  <li class=mr4><a href="/projects/not-os/path.html">path</a>
+  <li class=mr4><a href="/projects/not-os/shrunk.html">shrunk</a>
+  <li class=mr4><a href="/projects/not-os/toplevel.html">toplevel</a>
 </ul>
 </section>
 <section class="w-40-ns pr4 mb5">
 <h1 class="f5 ttu lh-title mb3">Source</h1>
 <ul class="list pa0 ma0 lh-copy">
-  <li class=mr4><a href="/projects/not-os/src/default.nix">default.nix</a>
+  <li class=mr4><a href="/projects/not-os/default.html">default.nix</a>
 </ul>
 </section>
 <section class="w-60-ns pr4 mb5">
 <h1 class="f5 ttu lh-title mb3">Results</h1>
 <ul class="list pa0 ma0 lh-copy">
-  <li class=mr4><a href="/projects/not-os/src/default.nix">iyyf9-runvm</a>
+  <li class=mr4><a href="/projects/not-os/index.html">iyyf9-runvm</a>
+</ul>
+<br />
+<h1 class="f5 ttu lh-title mb3">Values</h1>
+<ul class="list pa0 ma0 lh-copy">
+  <li class=mr4><a href="/projects/not-os/cmdline.html">cmdline</a>
 </ul>
 </section>
 </div>
