@@ -109,6 +109,16 @@ echo -n $out >> $out
     echo '</code></pre>' >> $out
     echo '${hypertext.footer}' >> $out
   '';
+  md.cmdline = pkgs.substituteAll {
+    src = ./cmdline.md;
+    result = artefacts.cmdline;
+    inherit (hypertext) footer;
+  };
+  md.root-modules = pkgs.substituteAll {
+    src = ./root-modules.md;
+    result = artefacts.root-modules;
+    inherit (hypertext) footer;
+  };
 
   all = pkgs.runCommand "all" {} ''
     mkdir $out
@@ -125,5 +135,7 @@ echo -n $out >> $out
     cp ${md.shrunk} $out/shrunk.md
     cp ${md.toplevel} $out/toplevel.md
     cp ${md.default} $out/default.md
+    cp ${md.cmdline} $out/cmdline.md
+    cp ${md.root-modules} $out/root-modules.md
   '';
 }
