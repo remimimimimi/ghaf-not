@@ -69,6 +69,7 @@ with import ./templating.nix { inherit pkgs; };
         nixbld8:x:30008:30000:Nix build user 8:/var/empty:/run/current-system/sw/bin/nologin
         nixbld9:x:30009:30000:Nix build user 9:/var/empty:/run/current-system/sw/bin/nologin
         nixbld10:x:30010:30000:Nix build user 10:/var/empty:/run/current-system/sw/bin/nologin
+        nobody:x:65534:65534:Unprivileged account:/var/empty:/run/current-system/sw/bin/nologin
       '';
       "nsswitch.conf".text = ''
         hosts:     files  dns   myhostname mymachines
@@ -78,6 +79,7 @@ with import ./templating.nix { inherit pkgs; };
       group.text = ''
         root:x:0:
         nixbld:x:30000:nixbld1,nixbld10,nixbld2,nixbld3,nixbld4,nixbld5,nixbld6,nixbld7,nixbld8,nixbld9
+        nogroup:x:65534
       '';
       "ssh/ssh_host_rsa_key.pub".source = ./ssh/ssh_host_rsa_key.pub;
       "ssh/ssh_host_rsa_key" = { mode = "0600"; source = ./ssh/ssh_host_rsa_key; };

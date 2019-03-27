@@ -11,6 +11,42 @@ let
     PasswordAuthentication yes
     AuthorizedKeysFile /etc/ssh/authorized_keys.d/%u
   '';
+  nginx_config = pkgs.writeText "nginx_config" ''
+    user  nobody nogroup;
+    worker_processes  1;
+    daemon off;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+      access_log /var/log/nginx/access.log main;
+      server_names_hash_bucket_size  64;
+      default_type  application/octet-stream;
+
+      sendfile           on;
+      keepalive_timeout  65;
+
+      server {
+        listen 80;
+        server_name example.com;
+
+        add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+
+        location /robots.txt {
+            default_type text/plain;
+            return 200 'User-agent: *\nDisallow: /';
+        }
+      }
+    }
+    '';
   compat = pkgs.runCommand "runit-compat" {} ''
     mkdir -p $out/bin/
     cat << EOF > $out/bin/poweroff
@@ -47,6 +83,9 @@ in
       touch /etc/runit/stopit
       chmod 0 /etc/runit/stopit
       ${if true then "" else "${pkgs.dhcpcd}/sbin/dhcpcd"}
+
+      # For nginx
+      mkdir -p /var/log/nginx /var/run
     '';
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh
@@ -74,6 +113,11 @@ in
       echo Running nix-daemon...
       nix-store --load-db < /nix/store/nix-path-registration
       nix-daemon
+    '';
+    "service/nginx/run".source = pkgs.writeScript "nginx_run" ''
+      #!/bin/sh
+      echo Running nginx...
+      ${pkgs.nginx}/bin/nginx -c ${nginx_config}
     '';
     #"service/autohalt/run".source = pkgs.writeScript "autohalt" ''
     #  #!/bin/sh
