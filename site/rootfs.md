@@ -33,8 +33,8 @@ passing toplevel as argument. The closure is constructed by
 `nixpkgs/build-support/closure-info.nix`.
 
 A call to `nix-store --load-db` with the registration file found in the rootfs
-is done in a runit script. I woder if it could be done directly when the rootfs
-is mounted.
+is done in a runit script. I wonder if it could be done directly when the
+rootfs is mounted.
 
 
 <br />
