@@ -125,9 +125,9 @@ let
       modprobe $x
     done
 
-    mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
-    chmod 755 /mnt/
-    mkdir -p /mnt/nix/store/
+    #mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
+    #chmod 755 /mnt/
+    #mkdir -p /mnt/nix/store/
 
     ${if config.not-os.live then ''
     echo Creating writable Nix store...
@@ -139,7 +139,15 @@ let
     mount -t overlay overlay -o lowerdir=/mnt/nix/.ro-store,upperdir=/mnt/nix/.overlay-store/rw,workdir=/mnt/nix/.overlay-store/work /mnt/nix/store
     '' else ''
     echo Creating readonly Nix store...
-    mount $root /mnt/nix/store/ -t squashfs
+    # maybe libcrc32c is not necessary
+    modprobe jbd2
+    modprobe fscrypto
+    modprobe mbcache
+    modprobe crc16
+    modprobe libcrc32c
+    modprobe crc32c_generic
+    modprobe ext4
+    mount -t ext4 -o rw,exec $root /mnt
     ''}
 
     echo Switching root filesystem...
@@ -174,7 +182,7 @@ in
     system.build.extraUtils = extraUtils;
     system.build.shrunk = modules;
     system.build.rootModules = rootModules;
-    boot.initrd.availableKernelModules = [ ];
+    boot.initrd.availableKernelModules = [ "jbd2" "fscrypto" "mbcache" "crc16" "libcrc32c" "crc32c_generic" "ext4" ];
     boot.initrd.kernelModules =
       [ "tun" "loop" "squashfs" ] ++
       (lib.optional config.not-os.live "overlay");

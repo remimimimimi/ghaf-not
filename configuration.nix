@@ -2,7 +2,7 @@
 
 {
   imports = [ ./qemu.nix ];
-  not-os.live = true;
+  not-os.live = false;
   not-os.simpleStaticIp = true;
   environment.systemPackages = [ pkgs.utillinux ];
   environment.etc = {

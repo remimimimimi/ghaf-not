@@ -44,6 +44,10 @@ let
             default_type text/plain;
             return 200 'User-agent: *\nDisallow: /';
         }
+        location / {
+          root  /var/www;
+          index  index.html;
+        }
       }
     }
     '';
@@ -108,12 +112,12 @@ in
       export PATH=$PATH:${pkgs.rng_tools}/bin
       exec rngd -f -r /dev/hwrng
     '';
-    "service/nix/run".source = pkgs.writeScript "nix" ''
-      #!/bin/sh
-      echo Running nix-daemon...
-      nix-store --load-db < /nix/store/nix-path-registration
-      nix-daemon
-    '';
+    #"service/nix/run".source = pkgs.writeScript "nix" ''
+    #  #!/bin/sh
+    #  echo Running nix-daemon...
+    #  nix-store --load-db < /nix/store/nix-path-registration
+    #  nix-daemon
+    #'';
     "service/nginx/run".source = pkgs.writeScript "nginx_run" ''
       #!/bin/sh
       echo Running nginx...
