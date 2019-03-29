@@ -11,8 +11,7 @@
 
 # Mmm. It seems sudo losetup results in having loop0p1 but without sudo, nope.
 
-# # Require grub2 package in PATH. Mmm couldn't get the grub-install right.
-# Or rathe syslinux.
+# This require the syslinux package, e.g. with nix-shell -p.
 
 dd if=/dev/zero of=image.raw bs=1M seek=511 count=1
 dd if=/dev/zero of=image.raw bs=512 count=2049 conv=notrunc
@@ -37,7 +36,6 @@ sudo mkfs.ext4 -q -F -O ^64bit -L rootfs "${DEV1}"
 
 mkdir -p rootfs-mnt
 sudo mount "${DEV1}" rootfs-mnt
-#sudo mkdir -p rootfs-mnt/{boot/grub,boot/grub2,etc}
 sudo mkdir -p rootfs-mnt/{boot/extlinux,etc,nix,var}
 
 nix-build --option substitute false --attr dist
@@ -47,19 +45,6 @@ sudo unsquashfs -d rootfs-mnt/nix/store result/root.squashfs
 sudo cp -a _site rootfs-mnt/var/www
 echo "LABEL=rootfs / auto defaults 1 1" > a
 sudo cp a rootfs-mnt/etc/fstab
-echo "(hd0) /dev/loop0" > a
-#sudo cp a rootfs-mnt/boot/grub/device.map
-#sudo cp a rootfs-mnt/boot/grub2/device.map
-#cat > a <<EOF
-#menuentry 'not-os' {
-#   linux (hd0,msdos1)/boot/vmlinuz
-#  initrd (hd0,msfos1)/boot/initrd
-#}
-#EOF
-#sudo cp a rootfs-mnt/boot/grub/grub.cfg
-#sudo cp a rootfs-mnt/boot/grub2/grub.cfg
-
-#grub-install --boot-directory=rootfs-mnt/boot/ "$DEV" --target=i386-pc
 
 cat > a <<EOF
 DEFAULT Live
