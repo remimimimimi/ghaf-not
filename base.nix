@@ -144,25 +144,22 @@ in
         faketime "1970-01-01 00:00:00" mkfs.vfat -F 16 -i 0x20000000 -n BOOT boot.raw
 
         # Populate the files intended for /boot
-        mkdir -p syslinux boot/syslinux
-        cat > boot/syslinux/syslinux.cfg <<EOF
+        mkdir -p boot/
+        cat > boot/syslinux.cfg <<EOF
         PROMPT 1
-        TIMEOUT 50
+        TIMEOUT 1
         DEFAULT play
         LABEL play
-          LINUX ../vmlinuz
+          LINUX vmlinuz
           APPEND console=ttyS0 root=/dev/vda1
-          INITRD ../initrd
+          INITRD initrd
         EOF
         cp ${config.system.build.kernel}/bzImage boot/vmlinuz
         cp ${config.system.build.initialRamdisk}/initrd boot/initrd
-        cp boot/syslinux/syslinux.cfg syslinux/
-        cp ${syslinux}/share/syslinux/*.c32 boot/syslinux/
 
         # Copy the populated /boot into the SD image
         (cd boot; mcopy -bpsvm -i ../boot.raw ./* ::)
-        (cd syslinux; mcopy -bpsvm -i ../boot.raw ./* ::)
-        syslinux --directory /boot/syslinux --install boot.raw
+        syslinux --directory /boot --install boot.raw
         cp boot.raw $out
       '';
     }) {};
