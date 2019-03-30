@@ -147,7 +147,7 @@ let
     modprobe libcrc32c
     modprobe crc32c_generic
     modprobe ext4
-    mount -t ext4 -o rw,exec $root /mnt
+    mount -t ext4 -o rw,exec /dev/vda2 /mnt
     ''}
 
     echo Switching root filesystem...

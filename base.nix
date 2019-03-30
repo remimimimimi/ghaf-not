@@ -6,8 +6,8 @@ with import ./templating.nix { inherit pkgs; };
 let
   # ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
   ext4 = pkgs.callPackage ./make-ext4-fs.nix ({
-    storePaths = [ config.system.build.toplevel config.system.build.bootStage2 config.system.build.kernel config.system.build.initialRamdisk ];
-    volumeLabel = "TOPLEVEL";
+    storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
+    volumeLabel = "rootfs";
     kernel = config.system.build.kernel;
     initialRamdisk = config.system.build.initialRamdisk;
   });
@@ -135,31 +135,62 @@ in
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
     system.build.ext4 = ext4;
-    system.build.qcow2 = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux }: stdenv.mkDerivation {
+    system.build.qcow2 = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
       name = "qcow2";
 
-      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux ];
+      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
 
       buildCommand = ''
         export img=$out
 
         # Create the image file sized to fit the rootfs, plus 20M of slack
         rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
-        bootSizeBlocks=2048
+        bootSizeBlocks=$((20 * 1024 * 1024 / 512))
         imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
-        truncate -s $imageSize $img
+        #truncate -s $imageSize $img
+        dd if=/dev/zero of=$img bs=1M seek=511 count=1
+        dd conv=notrunc if=/dev/zero of=$img bs=512 count=2049
 
         # type=83 is 'Linux'.
         sfdisk $img <<EOF
             label: dos
             label-id: 0x20000000
 
-            start=2048, type=83, bootable
+            start=8M, size=$bootSizeBlocks, type=b, bootable
+            start=28M, type=83
         EOF
 
         # Copy the rootfs into image
-        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
+        eval $(partx $img -o START,SECTORS --nr 2 --pairs)
         dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
+
+        # Create a FAT32 /boot partition of suitable size into boot.raw
+        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
+        truncate -s $((SECTORS * 512)) boot.raw
+        faketime "1970-01-01 00:00:00" mkfs.vfat -F 16 -i 0x20000000 -n BOOT boot.raw
+
+        # Populate the files intended for /boot
+        mkdir -p syslinux boot/syslinux
+        cat > boot/syslinux/syslinux.cfg <<EOF
+        PROMPT 1
+        TIMEOUT 50
+        DEFAULT play
+        LABEL play
+          LINUX ../vmlinuz
+          APPEND console=ttyS0 root=/dev/vda1
+          INITRD ../initrd
+        EOF
+        cp ${config.system.build.kernel}/bzImage boot/vmlinuz
+        cp ${config.system.build.initialRamdisk}/initrd boot/initrd
+        cp boot/syslinux/syslinux.cfg syslinux/
+        cp ${syslinux}/share/syslinux/*.c32 boot/syslinux/
+
+        # Copy the populated /boot into the SD image
+        (cd boot; mcopy -bpsvm -i ../boot.raw ./* ::)
+        (cd syslinux; mcopy -bpsvm -i ../boot.raw ./* ::)
+        syslinux --directory /boot/syslinux --install boot.raw
+        dd conv=notrunc if=boot.raw of=$img seek=$START count=$SECTORS
+        dd if=${syslinux}/share/syslinux/mbr.bin of=$img bs=440 count=1 conv=notrunc
       '';
     }) {};
   };
