@@ -132,38 +132,15 @@ in
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
     system.build.ext4 = ext4;
-    system.build.raw = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
-      name = "raw";
+    system.build.boot = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
+      name = "boot";
 
       nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
 
       buildCommand = ''
-        export img=$out
-
-        # Create the image file sized to fit the rootfs, plus 20M of slack
-        rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
-        bootSizeBlocks=$((20 * 1024 * 1024 / 512))
-        imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
-        #truncate -s $imageSize $img
-        dd if=/dev/zero of=$img bs=1M seek=511 count=1
-        dd conv=notrunc if=/dev/zero of=$img bs=512 count=2049
-
-        # type=83 is 'Linux'.
-        sfdisk $img <<EOF
-            label: dos
-            label-id: 0x20000000
-
-            start=8M, size=$bootSizeBlocks, type=b, bootable
-            start=28M, type=83
-        EOF
-
-        # Copy the rootfs into image
-        eval $(partx $img -o START,SECTORS --nr 2 --pairs)
-        dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
-
         # Create a FAT32 /boot partition of suitable size into boot.raw
-        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
-        truncate -s $((SECTORS * 512)) boot.raw
+        # 10M is currently enough.
+        truncate -s $((10 * 1024 * 1024)) boot.raw
         faketime "1970-01-01 00:00:00" mkfs.vfat -F 16 -i 0x20000000 -n BOOT boot.raw
 
         # Populate the files intended for /boot
@@ -186,7 +163,41 @@ in
         (cd boot; mcopy -bpsvm -i ../boot.raw ./* ::)
         (cd syslinux; mcopy -bpsvm -i ../boot.raw ./* ::)
         syslinux --directory /boot/syslinux --install boot.raw
-        dd conv=notrunc if=boot.raw of=$img seek=$START count=$SECTORS
+        cp boot.raw $out
+      '';
+    }) {};
+    system.build.raw = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
+      name = "raw";
+
+      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
+
+      # This is similar to nixpkgs/nixos/modules/installer/cd-dvd/sd-image.nix.
+      # Could be factored if this file is included in nixpkgs.
+      buildCommand = ''
+        export img=$out
+
+        # Create the image file sized to fit the rootfs, plus 20M of slack
+        rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
+        bootSizeBlocks=$(du -B 512 --apparent-size ${config.system.build.boot} | awk '{ print $1 }')
+        imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
+        truncate -s $imageSize $img
+
+        # type=b is 'W95 FAT32', type=83 is 'Linux'.
+        sfdisk $img <<EOF
+            label: dos
+            label-id: 0x20000000
+
+            start=1M, size=$bootSizeBlocks, type=b, bootable
+            start=11M, type=83
+        EOF
+        # TODO The 11M above should be computed with 1M (preceding line) + bootSize.
+
+        # Copy the rootfs into image
+        eval $(partx $img -o START,SECTORS --nr 2 --pairs)
+        dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
+
+        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
+        dd conv=notrunc if=${config.system.build.boot} of=$img seek=$START count=$SECTORS
         dd if=${syslinux}/share/syslinux/mbr.bin of=$img bs=440 count=1 conv=notrunc
       '';
     }) {};
