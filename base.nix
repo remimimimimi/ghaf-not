@@ -135,8 +135,8 @@ in
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
     system.build.ext4 = ext4;
-    system.build.qcow2 = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
-      name = "qcow2";
+    system.build.raw = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
+      name = "raw";
 
       nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
 
@@ -193,5 +193,9 @@ in
         dd if=${syslinux}/share/syslinux/mbr.bin of=$img bs=440 count=1 conv=notrunc
       '';
     }) {};
+    system.build.qcow2 = pkgs.runCommand "qcow2" {
+    } ''
+      ${pkgs.qemu}/bin/qemu-img convert -f raw -O qcow2 ${config.system.build.raw} $out
+    '';
   };
 }

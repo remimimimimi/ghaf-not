@@ -48,6 +48,7 @@ rec {
   initrd = os.config.system.build.initialRamdisk;
   rootfs = os.config.system.build.squashfs;
   ext4 = os.config.system.build.ext4;
+  raw = os.config.system.build.raw;
   qcow2 = os.config.system.build.qcow2;
   toplevel = os.config.system.build.toplevel;
   path = os.config.system.path;
