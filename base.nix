@@ -3,6 +3,15 @@
 with lib;
 with import ./templating.nix { inherit pkgs; };
 
+let
+  # ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
+  ext4 = pkgs.callPackage ./make-ext4-fs.nix ({
+    storePaths = [ config.system.build.toplevel config.system.build.bootStage2 config.system.build.kernel config.system.build.initialRamdisk ];
+    volumeLabel = "TOPLEVEL";
+    kernel = config.system.build.kernel;
+    initialRamdisk = config.system.build.initialRamdisk;
+  });
+in
 {
   options = {
     system.build = mkOption {
@@ -125,9 +134,33 @@ with import ./templating.nix { inherit pkgs; };
     system.build.squashfs = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
-    system.build.ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
-      storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
-      volumeLabel = "TOPLEVEL";
-    });
+    system.build.ext4 = ext4;
+    system.build.qcow2 = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux }: stdenv.mkDerivation {
+      name = "qcow2";
+
+      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux ];
+
+      buildCommand = ''
+        export img=$out
+
+        # Create the image file sized to fit the rootfs, plus 20M of slack
+        rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
+        bootSizeBlocks=2048
+        imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
+        truncate -s $imageSize $img
+
+        # type=83 is 'Linux'.
+        sfdisk $img <<EOF
+            label: dos
+            label-id: 0x20000000
+
+            start=2048, type=83, bootable
+        EOF
+
+        # Copy the rootfs into image
+        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
+        dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
+      '';
+    }) {};
   };
 }
