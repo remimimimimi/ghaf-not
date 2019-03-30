@@ -47,6 +47,7 @@ rec {
   kernel = os.config.system.build.kernel;
   initrd = os.config.system.build.initialRamdisk;
   rootfs = os.config.system.build.squashfs;
+  ext4 = os.config.system.build.ext4;
   toplevel = os.config.system.build.toplevel;
   path = os.config.system.path;
   dist = os.config.system.build.dist;

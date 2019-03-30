@@ -44,6 +44,7 @@ command as they appear at the top of each page.*
   <li class=mr4><a href="/projects/not-os/kernel.html">kernel</a>
   <li class=mr4><a href="/projects/not-os/initrd.html">initrd</a>
   <li class=mr4><a href="/projects/not-os/rootfs.html">rootfs</a>
+  <li class=mr4><a href="/projects/not-os/ext4.html">ext4</a>
   <li class=mr4><a href="/projects/not-os/stage-1.html">stage-1</a>
   <li class=mr4><a href="/projects/not-os/stage-2.html">stage-2</a>
   <li class=mr4><a href="/projects/not-os/dist.html">dist</a>

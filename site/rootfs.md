@@ -9,8 +9,10 @@ $ nix-build -A rootfs
 @result@
 ```
 
-The rootf derivation, defined as `config.system.build.squashfs`, creates a
+The rootfs derivation, defined as `config.system.build.squashfs`, creates a
 squashfs image. It contains the closures of toplevel and a registration file.
+
+The rootfs is also available as an [ext4](ext4.html) image.
 
 To explore the result, we can extract the content of the rootfs in a temporary
 directory as follow:

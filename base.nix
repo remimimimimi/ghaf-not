@@ -125,5 +125,9 @@ with import ./templating.nix { inherit pkgs; };
     system.build.squashfs = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
+    system.build.ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
+      storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
+      volumeLabel = "TOPLEVEL";
+    });
   };
 }

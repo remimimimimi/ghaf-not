@@ -61,6 +61,11 @@ echo -n $out >> $out
     result = artefacts.rootfs;
     inherit (hypertext) footer;
   };
+  md.ext4 = pkgs.substituteAll {
+    src = ./ext4.md;
+    result = artefacts.ext4;
+    inherit (hypertext) footer;
+  };
   md.stage-1 = pkgs.substituteAll {
     src = ./stage-1.md;
     result = artefacts.stage-1;
@@ -127,6 +132,7 @@ echo -n $out >> $out
     cp ${md.kernel} $out/kernel.md
     cp ${md.initrd} $out/initrd.md
     cp ${md.rootfs} $out/rootfs.md
+    cp ${md.ext4} $out/ext4.md
     cp ${md.stage-1} $out/stage-1.md
     cp ${md.stage-2} $out/stage-2.md
     cp ${md.dist} $out/dist.md
