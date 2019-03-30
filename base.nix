@@ -4,12 +4,9 @@ with lib;
 with import ./templating.nix { inherit pkgs; };
 
 let
-  # ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
-  ext4 = pkgs.callPackage ./make-ext4-fs.nix ({
+  ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
     storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
     volumeLabel = "rootfs";
-    kernel = config.system.build.kernel;
-    initialRamdisk = config.system.build.initialRamdisk;
   });
 in
 {
