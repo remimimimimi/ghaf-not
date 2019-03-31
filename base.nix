@@ -151,7 +151,7 @@ in
         DEFAULT play
         LABEL play
           LINUX vmlinuz
-          APPEND console=ttyS0 root=/dev/vda1
+          APPEND console=ttyS0 root=/dev/vda2
           INITRD initrd
         EOF
         cp ${config.system.build.kernel}/bzImage boot/vmlinuz
