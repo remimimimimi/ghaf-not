@@ -35,6 +35,8 @@ command as they appear at the top of each page.*
 <h1 class="f5 ttu lh-title mb3">Intro</h1>
 <ul class="list pa0 ma0 lh-copy">
   <li class=mr4><a href="/projects/not-os/index.html">not-os</a>
+  <li class=mr4><a href="/projects/not-os/digital-ocean.html">Digital Ocean</a>
+  <li class=mr4><a href="/projects/not-os/todo.html">TODO</a>
 </ul>
 </section>
 <section class="w-70-ns pr4 mb5">
@@ -52,6 +54,11 @@ command as they appear at the top of each page.*
   <li class=mr4><a href="/projects/not-os/path.html">path</a>
   <li class=mr4><a href="/projects/not-os/shrunk.html">shrunk</a>
   <li class=mr4><a href="/projects/not-os/toplevel.html">toplevel</a>
+  <li class=mr4><a href="/projects/not-os/boot.html">boot</a>
+  <li class=mr4><a href="/projects/not-os/ext4.html">ext4</a>
+  <li class=mr4><a href="/projects/not-os/raw.html">raw</a>
+  <li class=mr4><a href="/projects/not-os/qcow2.html">qcow2</a>
+  <li class=mr4><a href="/projects/not-os/syslinux.html">syslinux</a>
 </ul>
 </section>
 <section class="w-40-ns pr4 mb5">

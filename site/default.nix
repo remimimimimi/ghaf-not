@@ -101,6 +101,26 @@ echo -n $out >> $out
     result = artefacts.toplevel;
     inherit (hypertext) footer;
   };
+  md.boot = pkgs.substituteAll {
+    src = ./boot.md;
+    result = artefacts.boot;
+    inherit (hypertext) footer;
+  };
+  md.raw = pkgs.substituteAll {
+    src = ./raw.md;
+    result = artefacts.raw;
+    inherit (hypertext) footer;
+  };
+  md.qcow2 = pkgs.substituteAll {
+    src = ./qcow2.md;
+    result = artefacts.qcow2;
+    inherit (hypertext) footer;
+  };
+  md.syslinux = pkgs.substituteAll {
+    src = ./syslinux.md;
+    result = artefacts.syslinux;
+    inherit (hypertext) footer;
+  };
   md.default = pkgs.runCommand "default.md" {} ''
     echo '---' > $out
     echo 'title: not-os' >> $out
@@ -124,6 +144,14 @@ echo -n $out >> $out
     result = artefacts.root-modules;
     inherit (hypertext) footer;
   };
+  md.todo = pkgs.substituteAll {
+    src = ./todo.md;
+    inherit (hypertext) footer;
+  };
+  md.digital-ocean = pkgs.substituteAll {
+    src = ./digital-ocean.md;
+    inherit (hypertext) footer;
+  };
 
   all = pkgs.runCommand "all" {} ''
     mkdir $out
@@ -140,8 +168,13 @@ echo -n $out >> $out
     cp ${md.path} $out/path.md
     cp ${md.shrunk} $out/shrunk.md
     cp ${md.toplevel} $out/toplevel.md
-    cp ${md.default} $out/default.md
+    cp ${md.boot} $out/boot.md
+    cp ${md.raw} $out/raw.md
+    cp ${md.qcow2} $out/qcow2.md
+    cp ${md.syslinux} $out/syslinux.md
     cp ${md.cmdline} $out/cmdline.md
     cp ${md.root-modules} $out/root-modules.md
+    cp ${md.todo} $out/todo.md
+    cp ${md.digital-ocean} $out/digital-ocean.md
   '';
 }
