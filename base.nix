@@ -8,6 +8,15 @@ let
     storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
     volumeLabel = "TOPLEVEL";
   });
+  syslinuxCfg = pkgs.writeText "syslinux.cfg" ''
+    PROMPT 1
+    TIMEOUT 1
+    DEFAULT play
+    LABEL play
+      LINUX vmlinuz
+      APPEND console=ttyS0 root=/dev/vda2
+      INITRD initrd
+  '';
 in
 {
   options = {
@@ -132,6 +141,7 @@ in
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
     system.build.ext4 = ext4;
+    system.build.syslinux = syslinuxCfg;
     system.build.boot = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
       name = "boot";
 
@@ -145,15 +155,7 @@ in
 
         # Populate the files intended for /boot
         mkdir -p boot/
-        cat > boot/syslinux.cfg <<EOF
-        PROMPT 1
-        TIMEOUT 1
-        DEFAULT play
-        LABEL play
-          LINUX vmlinuz
-          APPEND console=ttyS0 root=/dev/vda2
-          INITRD initrd
-        EOF
+        cp ${config.system.build.syslinux} boot/syslinux.cfg
         cp ${config.system.build.kernel}/bzImage boot/vmlinuz
         cp ${config.system.build.initialRamdisk}/initrd boot/initrd
 

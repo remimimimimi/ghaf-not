@@ -49,6 +49,7 @@ rec {
   rootfs = os.config.system.build.squashfs;
   ext4 = os.config.system.build.ext4;
   boot = os.config.system.build.boot;
+  syslinux = os.config.system.build.syslinux;
   raw = os.config.system.build.raw;
   qcow2 = os.config.system.build.qcow2;
   toplevel = os.config.system.build.toplevel;
