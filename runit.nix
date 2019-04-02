@@ -71,24 +71,31 @@ in
   environment.etc = {
     "runit/1".source = pkgs.writeScript "1" ''
       #!${pkgs.stdenv.shell}
-      ${lib.optionalString config.not-os.simpleStaticIp ''
-      echo Setting static IP address...
-      ip addr add 10.0.2.15 dev eth0
-      ip link set eth0 up
-      ip route add 10.0.2.0/24 dev eth0
-      ip route add default via 10.0.2.2 dev eth0
-      ''}
       mkdir /bin/
       ln -s ${pkgs.stdenv.shell} /bin/sh
-      echo Running ntpdate...
-      ${pkgs.ntp}/bin/ntpdate pool.ntp.org
 
       # disable DPMS on tty's
       echo -ne "\033[9;0]" > /dev/tty0
 
       touch /etc/runit/stopit
       chmod 0 /etc/runit/stopit
-      ${if true then "" else "${pkgs.dhcpcd}/sbin/dhcpcd"}
+
+      ${if config.not-os.simpleStaticIp then ''
+        echo Setting static IP address...
+        ip addr add 10.0.2.15 dev eth0
+        ip link set eth0 up
+        ip route add 10.0.2.0/24 dev eth0
+        ip route add default via 10.0.2.2 dev eth0
+      '' else ''
+        echo Setting dynamic IP address...
+        touch /etc/dhcpcd.conf
+        mkdir -p /var/db/dhcpcd
+        ip link set up eth0
+        ${pkgs.dhcpcd}/sbin/dhcpcd eth0 -4 --waitip
+      ''}
+
+      echo Running ntpdate...
+      ${pkgs.ntp}/bin/ntpdate pool.ntp.org
 
       # For nginx
       mkdir -p /var/log/nginx /var/run

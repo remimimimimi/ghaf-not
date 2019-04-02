@@ -146,7 +146,9 @@ let
     modprobe crc16
     modprobe libcrc32c
     modprobe crc32c_generic
+
     modprobe ext4
+    modprobe af_packet
     mount -t ext4 -o rw,exec $root /mnt
     ''}
 
@@ -182,7 +184,16 @@ in
     system.build.extraUtils = extraUtils;
     system.build.shrunk = modules;
     system.build.rootModules = rootModules;
-    boot.initrd.availableKernelModules = [ "jbd2" "fscrypto" "mbcache" "crc16" "libcrc32c" "crc32c_generic" "ext4" ];
+    boot.initrd.availableKernelModules = [
+      # TODO Use config settings, maye be remove one of the crc thing,
+      # maybe some should be in kernelModules below.
+
+      # For the FAT16 boot partition.
+      "jbd2" "fscrypto" "mbcache" "crc16" "libcrc32c" "crc32c_generic"
+      # For the EXT4 partition, when stage-1 is run from the boot partition.
+      "ext4"
+      # For dhcpcd.
+      "af_packet" ];
     boot.initrd.kernelModules =
       [ "tun" "loop" "squashfs" ] ++
       (lib.optional config.not-os.live "overlay");

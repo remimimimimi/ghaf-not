@@ -3,7 +3,7 @@
 {
   imports = [ ./qemu.nix ];
   not-os.live = false;
-  not-os.simpleStaticIp = true;
+  not-os.simpleStaticIp = false;
   environment.systemPackages = [ pkgs.utillinux ];
   environment.etc = {
     "ssh/authorized_keys.d/root" = {
