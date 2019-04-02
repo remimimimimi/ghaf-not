@@ -20,6 +20,8 @@
 
 # This require the syslinux package, e.g. with nix-shell -p.
 
+EMBED_SITE="${EMBED_SITE:-_site}"
+
 dd if=/dev/zero of=image.raw bs=1M seek=511 count=1
 dd if=/dev/zero of=image.raw bs=512 count=2049 conv=notrunc
 
@@ -54,7 +56,7 @@ nix-build --option substitute false --attr dist
 sudo cp result/kernel rootfs-mnt/boot/vmlinuz
 sudo cp result/initrd rootfs-mnt/boot/
 sudo unsquashfs -d rootfs-mnt/nix/store result/root.squashfs
-sudo cp -a _site rootfs-mnt/var/www
+sudo cp -a "${EMBED_SITE}" rootfs-mnt/var/www
 echo "LABEL=rootfs / auto defaults 1 1" > a
 sudo cp a rootfs-mnt/etc/fstab
 

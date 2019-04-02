@@ -12,7 +12,7 @@ let
     AuthorizedKeysFile /etc/ssh/authorized_keys.d/%u
   '';
   nginx_config = pkgs.writeText "nginx_config" ''
-    user  nobody nogroup;
+    user nobody nogroup;
     worker_processes  1;
     daemon off;
 
@@ -29,6 +29,8 @@ let
                         '"$http_user_agent" "$http_x_forwarded_for"';
       access_log /var/log/nginx/access.log main;
       server_names_hash_bucket_size  64;
+
+      include ${pkgs.nginx}/conf/mime.types;
       default_type  application/octet-stream;
 
       sendfile           on;
