@@ -39,3 +39,50 @@ cycle.
 
 - Creating the actual HTML pages is done out of this repository. I'd like to
   generate them directly here, possibly with a DocBook toolchain.
+
+- Add fcron. Use it to renew certificates.
+
+- Have something like `nixos-rebuild switch` working. It would be great to have
+  an almost empty VM starting with just the ability to nix-build its
+  configuration (provided through config-2 user-data).
+
+  Currently Digital Ocean has a big shortcoming: it is not possible to assign a
+  floating IP to a VM created from a custom image. The only documented way to
+  keep an IP, is to rebuild an existing VM. But it is actually not possible
+  because custom images are not proposed on the rebuild screen. This means that
+  nixos-rebuild is a must have.
+
+- The import of `qemu.nix` in the configuration maybe not necessary on Digital
+  Ocean.
+
+- nixpkgs offers multiple ACME implementations. I'm using dehydrated, wich is a
+  Bash script. (I don't want to rely on Python for that. There is a Go
+  implementation but building its derivation started to compile a lot of things
+  and I stopped it. I couldn't get acme.sh run).
+
+  After renewing a certificate, Nginx can be reloaded as follow:
+
+```
+#! ${pkgs.stdenv.shell}
+${pkgs.nginx}/bin/nginx -s reload -c ${nginx_config}
+```
+
+  I plan to use two Nginx instances: one for serving HTTP, in particular the
+  .well-known route used by ACME, and the other to serve HTTPS.
+
+  A difficulty by using the same instance is that it can't contain the
+  configuration of the HTTPS part as long as the certificates or not in place:
+  Nginx wouldn't start at all, preventing to serve the .well-known directory too.
+
+  The fact that obtaining a certificate makes use of a HTTP server is a detail
+  that I would rather prefer abstracted away of the main HTTPS server.
+  Indeed it is possible to obtain a certificate in other way.
+
+  This means that instead of editing the configuration of a running instance
+  and reloading it, the second service is broken until the first one does its
+  job.
+
+- I don't like the http challenge and would prefer to use the dns-based
+  challenge to acquire a certificate (the machine should already be running a
+  web server, already be assigned the domain, and actually use HTTP, before
+  requesting the certificcate).
