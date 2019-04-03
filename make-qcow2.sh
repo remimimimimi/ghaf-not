@@ -50,13 +50,14 @@ sudo mkfs.ext4 -q -F -O ^64bit -L rootfs "${DEV1}"
 
 mkdir -p rootfs-mnt
 sudo mount "${DEV1}" rootfs-mnt
-sudo mkdir -p rootfs-mnt/{boot/extlinux,etc,nix,var}
+sudo mkdir -p rootfs-mnt/{boot/extlinux,etc,nix,var/www}
 
 nix-build --option substitute false --attr dist
 sudo cp result/kernel rootfs-mnt/boot/vmlinuz
 sudo cp result/initrd rootfs-mnt/boot/
 sudo unsquashfs -d rootfs-mnt/nix/store result/root.squashfs
-sudo cp -a "${EMBED_SITE}" rootfs-mnt/var/www
+sudo cp -a "${EMBED_SITE}" rootfs-mnt/var/www/noteed.com
+sudo mkdir -p rootfs-mnt/var/www/acme/.well-known/acme-challenge
 echo "LABEL=rootfs / auto defaults 1 1" > a
 sudo cp a rootfs-mnt/etc/fstab
 

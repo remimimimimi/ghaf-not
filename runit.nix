@@ -11,13 +11,13 @@ let
     PasswordAuthentication yes
     AuthorizedKeysFile /etc/ssh/authorized_keys.d/%u
   '';
-  nginx_config = pkgs.writeText "nginx_config" ''
+  nginx_http_config = pkgs.writeText "nginx_http_config" ''
     user nobody nogroup;
     worker_processes  1;
     daemon off;
 
-    error_log  /var/log/nginx/error.log warn;
-    pid        /var/run/nginx.pid;
+    error_log  /var/log/http/error.log warn;
+    pid        /var/run/http.pid;
 
     events {
       worker_connections  1024;
@@ -27,7 +27,7 @@ let
       log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                         '$status $body_bytes_sent "$http_referer" '
                         '"$http_user_agent" "$http_x_forwarded_for"';
-      access_log /var/log/nginx/access.log main;
+      access_log /var/log/http/access.log main;
       server_names_hash_bucket_size  64;
 
       include ${pkgs.nginx}/conf/mime.types;
@@ -47,7 +47,52 @@ let
             return 200 'User-agent: *\nDisallow: /';
         }
         location / {
-          root  /var/www;
+          root  /var/www/acme;
+          index  index.html;
+        }
+      }
+    }
+    '';
+  nginx_https_config = pkgs.writeText "nginx_https_config" ''
+    user nobody nogroup;
+    worker_processes  1;
+    daemon off;
+
+    error_log  /var/log/https/error.log warn;
+    pid        /var/run/https.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+      access_log /var/log/https/access.log main;
+      server_names_hash_bucket_size  64;
+
+      include ${pkgs.nginx}/conf/mime.types;
+      default_type  application/octet-stream;
+
+      sendfile           on;
+      keepalive_timeout  65;
+
+      server {
+        listen 443;
+        server_name noteed.com;
+        ssl on;
+        ssl_certificate /var/dehydrated/certs/noteed.com/fullchain.pem;
+        ssl_certificate_key /var/dehydrated/certs/noteed.com/privkey.pem;
+
+        add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+
+        location /robots.txt {
+            default_type text/plain;
+            return 200 'User-agent: *\nDisallow: /';
+        }
+        location / {
+          root  /var/www/noteed.com;
           index  index.html;
         }
       }
@@ -97,8 +142,13 @@ in
       echo Running ntpdate...
       ${pkgs.ntp}/bin/ntpdate pool.ntp.org
 
-      # For nginx
-      mkdir -p /var/log/nginx /var/run
+      export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      mkdir -p /var/dehydrated
+      echo Registering to letsencrypt...
+      ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --register --accept-terms
+
+      # For Nginx
+      mkdir -p /var/log/{http,https} /var/run
     '';
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh
@@ -127,10 +177,17 @@ in
     #  nix-store --load-db < /nix/store/nix-path-registration
     #  nix-daemon
     #'';
-    "service/nginx/run".source = pkgs.writeScript "nginx_run" ''
+    "service/http/run".source = pkgs.writeScript "http_run" ''
       #!/bin/sh
-      echo Running nginx...
-      ${pkgs.nginx}/bin/nginx -c ${nginx_config}
+      echo Running Nginx HTTP...
+      ${pkgs.nginx}/bin/nginx -c ${nginx_http_config}
+    '';
+    "service/https/run".source = pkgs.writeScript "https_run" ''
+      #!/bin/sh
+      echo Running Nginx HTTPS...
+      export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+      ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --cron --domain noteed.com
+      ${pkgs.nginx}/bin/nginx -c ${nginx_https_config}
     '';
     #"service/autohalt/run".source = pkgs.writeScript "autohalt" ''
     #  #!/bin/sh

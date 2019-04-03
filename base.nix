@@ -58,6 +58,11 @@ in
       };
     };
     environment.etc = {
+      "letsencrypt/dehydrated.conf".text = ''
+        BASEDIR=/var/dehydrated
+        CONTACT_EMAIL=noteed@gmail.com
+        WELLKNOWN=/var/www/acme/.well-known/acme-challenge
+      '';
       "nix/nix.conf".source = pkgs.runCommand "nix.conf" {} ''
         extraPaths=$(for i in $(cat ${pkgs.writeReferencesToFile pkgs.stdenv.shell}); do if test -d $i; then echo $i; fi; done)
         cat > $out << EOF
