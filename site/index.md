@@ -31,10 +31,14 @@ command as they appear at the top of each page.*
 
 
 <div class="mv5 flex-ns">
-<section class="w-40-ns pr4 mb5">
+<section class="w-60-ns pr4 mb5">
 <h1 class="f5 ttu lh-title mb3">Intro</h1>
 <ul class="list pa0 ma0 lh-copy">
   <li class=mr4><a href="/projects/not-os/index.html">not-os</a>
+</ul>
+<br />
+<h1 class="f5 ttu lh-title mb3">Notes</h1>
+<ul class="list pa0 ma0 lh-copy">
   <li class=mr4><a href="/projects/not-os/digital-ocean.html">Digital Ocean</a>
   <li class=mr4><a href="/projects/not-os/todo.html">TODO</a>
 </ul>
@@ -61,22 +65,16 @@ command as they appear at the top of each page.*
   <li class=mr4><a href="/projects/not-os/syslinux.html">syslinux</a>
 </ul>
 </section>
-<section class="w-40-ns pr4 mb5">
-<h1 class="f5 ttu lh-title mb3">Source</h1>
-<ul class="list pa0 ma0 lh-copy">
-  <li class=mr4><a href="/projects/not-os/default.html">default.nix</a>
-</ul>
-</section>
-<section class="w-70-ns pr4 mb5">
-<h1 class="f5 ttu lh-title mb3">Results</h1>
-<ul class="list pa0 ma0 lh-copy">
-  <li class=mr4><a href="/projects/not-os/index.html">iyyf9-runvm</a>
-</ul>
-<br />
+<section class="w-50-ns pr4 mb5">
 <h1 class="f5 ttu lh-title mb3">Values</h1>
 <ul class="list pa0 ma0 lh-copy">
   <li class=mr4><a href="/projects/not-os/cmdline.html">cmdline</a>
   <li class=mr4><a href="/projects/not-os/root-modules.html">root-modules</a>
+</ul>
+<br />
+<h1 class="f5 ttu lh-title mb3">Source</h1>
+<ul class="list pa0 ma0 lh-copy">
+  <li class=mr4><a href="/projects/not-os/default.html">default.nix</a>
 </ul>
 </section>
 </div>
