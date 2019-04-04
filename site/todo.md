@@ -84,6 +84,11 @@ title: not-os
 - The site content should be in the Nix store (and referenced through a symlink
   when tying the loop should be done outside nix-build).
 
+- Use a `release.nix` file to fix the Git commit to build. Include that
+  information in the generated site.
+
+- Make the site part more flexible, instead of hard-coding noteed.com.
+
 
 <br />
 @footer@
