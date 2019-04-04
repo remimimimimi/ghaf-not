@@ -24,6 +24,12 @@ title: not-os
   would allow to create an image running on Digital Ocean with a normal Nix
   attribute instead of the special make-qcow2.sh script.
 
+    A work-around could be to use qemu within the Nix expression, although that
+    seems really ugly.
+
+    Maybe I should have a look at the internal of extlinux and see if it can be
+    modified; it would be educational.
+
 - Allow to reference the site derivation directly within the image definition.
   I didn't manage to do it because this creates a recursive definition (the
   image depends on the site which use the image result paths to embed them in the
