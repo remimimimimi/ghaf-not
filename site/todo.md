@@ -17,7 +17,8 @@ title: not-os
     Permission denied
     ```
 
-    this can be caused by creating (with `cp`) twice the same file in `$out`.
+    this can be caused by creating (e.g. with `cp`) twice the same file in
+    `$out`.
 
 - Create a bootable EXT4 partition without using root privilege or mount. This
   would allow to create an image running on Digital Ocean with a normal Nix
@@ -79,6 +80,9 @@ title: not-os
   challenge to acquire a certificate (the machine should already be running a
   web server, already be assigned the domain, and actually use HTTP, before
   requesting the certificcate).
+
+- The site content should be in the Nix store (and referenced through a symlink
+  when tying the loop should be done outside nix-build).
 
 
 <br />
