@@ -38,7 +38,7 @@ let
 
       server {
         listen 80;
-        server_name example.com;
+        server_name noteed.com;
 
         add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
 
@@ -46,9 +46,12 @@ let
             default_type text/plain;
             return 200 'User-agent: *\nDisallow: /';
         }
-        location / {
+        location /.well-known {
           root  /var/www/acme;
           index  index.html;
+        }
+        location / {
+          return 301 https://$host$request_uri;
         }
       }
     }
