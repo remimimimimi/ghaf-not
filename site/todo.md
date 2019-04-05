@@ -25,7 +25,7 @@ title: not-os
   attribute instead of the special make-qcow2.sh script.
 
     A work-around could be to use qemu within the Nix expression, although that
-    seems really ugly.
+    seems really ugly. This is now done in the `images` attribute.
 
     Maybe I should have a look at the internal of extlinux and see if it can be
     modified; it would be educational.

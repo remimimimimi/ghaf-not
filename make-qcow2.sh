@@ -22,15 +22,8 @@
 
 EMBED_SITE="${EMBED_SITE:-_site}"
 
-dd if=/dev/zero of=image.raw bs=1M seek=511 count=1
-dd if=/dev/zero of=image.raw bs=512 count=2049 conv=notrunc
-
-sfdisk ./image.raw <<EOF
-    label: dos
-    label-id: 0x20000000
-
-    start=2048, type=83, bootable
-EOF
+nix-build --attr images
+cp result/image.raw .
 
 sudo losetup --show -f -P image.raw
 
@@ -44,36 +37,9 @@ if [ "${DEV}" != "/dev/loop0" ] ; then
   exit 1
 fi
 
-# extlinux below requires a 32bit ext4. 64bit didn't seem to be a problem when
-# not unsquashing the rootfs but it caused a kernel panic otherwise.
-sudo mkfs.ext4 -q -F -O ^64bit -L rootfs "${DEV1}"
-
 mkdir -p rootfs-mnt
 sudo mount "${DEV1}" rootfs-mnt
-sudo mkdir -p rootfs-mnt/{boot/extlinux,etc,nix,var/www}
-
-nix-build --option substitute false --attr dist
-sudo cp result/kernel rootfs-mnt/boot/vmlinuz
-sudo cp result/initrd rootfs-mnt/boot/
-sudo unsquashfs -d rootfs-mnt/nix/store result/root.squashfs
-sudo cp -a "${EMBED_SITE}" rootfs-mnt/var/www/noteed.com
-sudo mkdir -p rootfs-mnt/var/www/acme/.well-known/acme-challenge
-echo "LABEL=rootfs / auto defaults 1 1" > a
-sudo cp a rootfs-mnt/etc/fstab
-
-cat > a <<EOF
-DEFAULT Live
-LABEL Live
-  KERNEL /boot/vmlinuz
-  APPEND initrd=/boot/initrd root=/dev/vda1
-TIMEOUT 10
-PROMPT 0
-EOF
-sudo cp a rootfs-mnt/boot/extlinux/extlinux.conf
-rm a
-
-sudo extlinux -i rootfs-mnt/boot/extlinux
-dd if=/nix/store/s4rbsvzj5nrq8bq5ni4d5rpl91h6c859-syslinux-2015-11-09/share/syslinux/mbr.bin of="${DEV}" bs=440 count=1
+sudo rsync -a "${EMBED_SITE}/" rootfs-mnt/var/www/noteed.com/
 
 sudo umount rootfs-mnt
 losetup -d ${DEV}

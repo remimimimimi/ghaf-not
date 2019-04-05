@@ -47,6 +47,7 @@ rec {
   kernel = os.config.system.build.kernel;
   initrd = os.config.system.build.initialRamdisk;
   rootfs = os.config.system.build.squashfs;
+  images = os.config.system.build.images;
   ext4 = os.config.system.build.ext4;
   boot = os.config.system.build.boot;
   syslinux = os.config.system.build.syslinux;

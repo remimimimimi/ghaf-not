@@ -145,6 +145,7 @@ in
     system.build.squashfs = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
+    system.build.images = import ./build-image.nix { inherit config pkgs; };
     system.build.ext4 = ext4;
     system.build.syslinux = syslinuxCfg;
     system.build.boot = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
