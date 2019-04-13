@@ -51,7 +51,8 @@ let
           index  index.html;
         }
         location / {
-          return 301 https://$host$request_uri;
+          root  /var/www/noteed.com;
+          index  index.html;
         }
       }
     }
@@ -80,6 +81,25 @@ let
 
       sendfile           on;
       keepalive_timeout  65;
+
+      server {
+        listen 80;
+        server_name noteed.com;
+
+        add_header X-Robots-Tag "noindex, nofollow, nosnippet, noarchive";
+
+        location /robots.txt {
+            default_type text/plain;
+            return 200 'User-agent: *\nDisallow: /';
+        }
+        location /.well-known {
+          root  /var/www/acme;
+          index  index.html;
+        }
+        location / {
+          return 301 https://$host$request_uri;
+        }
+      }
 
       server {
         listen 443;
@@ -156,43 +176,58 @@ in
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh
       # cat /proc/uptime
+
+      # Create the runlevels.
+      mkdir -p /etc/runit/runsvdir/http-only
+      mkdir -p /etc/runit/runsvdir/https-too
+
+      ln -s /etc/sv/rngd /etc/runit/runsvdir/http-only/rngd
+      ln -s /etc/sv/sshd /etc/runit/runsvdir/http-only/sshd
+      ln -s /etc/sv/http /etc/runit/runsvdir/http-only/http
+
+      ln -s /etc/sv/rngd /etc/runit/runsvdir/https-too/rngd
+      ln -s /etc/sv/sshd /etc/runit/runsvdir/https-too/sshd
+      ln -s /etc/sv/https /etc/runit/runsvdir/https-too/https
+
       echo Running runsvdir...
+      ln -s http-only /etc/runit/runsvdir/current
+      ln -s /etc/runit/runsvdir/current /etc/service
+      runsvchdir http-only
       exec runsvdir -P /etc/service
     '';
     "runit/3".source = pkgs.writeScript "3" ''
       #!/bin/sh
       echo Shutting down...
     '';
-    "service/sshd/run".source = pkgs.writeScript "sshd_run" ''
+    "sv/sshd/run".source = pkgs.writeScript "sshd_run" ''
       #!/bin/sh
       echo Running sshd...
-      ${pkgs.openssh}/bin/sshd -D -f ${sshd_config}
+      exec ${pkgs.openssh}/bin/sshd -D -f ${sshd_config}
     '';
-    "service/rngd/run".source = pkgs.writeScript "rngd" ''
+    "sv/rngd/run".source = pkgs.writeScript "rngd" ''
       #!/bin/sh
       echo Running rngd...
       export PATH=$PATH:${pkgs.rng_tools}/bin
       exec rngd -f -r /dev/hwrng
     '';
-    #"service/nix/run".source = pkgs.writeScript "nix" ''
+    #"sv/nix/run".source = pkgs.writeScript "nix" ''
     #  #!/bin/sh
     #  echo Running nix-daemon...
     #  nix-store --load-db < /nix/store/nix-path-registration
     #  nix-daemon
     #'';
-    "service/http/run".source = pkgs.writeScript "http_run" ''
+    "sv/http/run".source = pkgs.writeScript "http_run" ''
       #!/bin/sh
       echo Running Nginx HTTP...
-      ${pkgs.nginx}/bin/nginx -c ${nginx_http_config}
+      exec ${pkgs.nginx}/bin/nginx -c ${nginx_http_config}
     '';
-    "service/https/run".source = pkgs.writeScript "https_run" ''
+    # This will fail if there is no SSL certificate and key.
+    "sv/https/run".source = pkgs.writeScript "https_run" ''
       #!/bin/sh
       echo Running Nginx HTTPS...
-      export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-      ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --cron --domain noteed.com
-      ${pkgs.nginx}/bin/nginx -c ${nginx_https_config}
+      exec ${pkgs.nginx}/bin/nginx -c ${nginx_https_config}
     '';
-    #"service/autohalt/run".source = pkgs.writeScript "autohalt" ''
+    #"sv/autohalt/run".source = pkgs.writeScript "autohalt" ''
     #  #!/bin/sh
     #  for i in 1 2 3 4 5 6 7 8 9 10; do
     #    echo $i

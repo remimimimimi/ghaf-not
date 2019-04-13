@@ -1,10 +1,19 @@
 { pkgs, ... }:
 
+let
+
+  request-cert = pkgs.writeShellScriptBin "request-cert" ''
+    export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+    ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --cron --domain noteed.com
+  '';
+
+in
+
 {
   imports = [ ./qemu.nix ];
   not-os.live = false;
   not-os.simpleStaticIp = false;
-  environment.systemPackages = [ pkgs.utillinux ];
+  environment.systemPackages = [ pkgs.utillinux request-cert ];
   environment.etc = {
     "ssh/authorized_keys.d/root" = {
       text = ''
