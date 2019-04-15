@@ -149,6 +149,7 @@ let
 
     modprobe ext4
     modprobe af_packet
+    modprobe isofs
     mount -t ext4 -o rw,exec $root /mnt
     ''}
 
@@ -192,6 +193,8 @@ in
       "jbd2" "fscrypto" "mbcache" "crc16" "libcrc32c" "crc32c_generic"
       # For the EXT4 partition, when stage-1 is run from the boot partition.
       "ext4"
+      # For the config-2 (file system type iso9660) cloud config.
+      "isofs"
       # For dhcpcd.
       "af_packet" ];
     boot.initrd.kernelModules =

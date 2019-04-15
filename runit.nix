@@ -172,6 +172,19 @@ in
 
       # For Nginx
       mkdir -p /var/log/{http,https} /var/run
+
+      # Pseudo cloud config: copy the public SSH key in place.
+      ${if config.not-os.cloud-init then ''
+        echo Reading config-2 drive to set the root public SSH key...
+        mkdir /mnt
+        mount /dev/vdb /mnt
+        mkdir -p /etc/ssh/authorized_keys.d/
+        cat /mnt/openstack/latest/meta_data.json | \
+          ${pkgs.jq}/bin/jq -r '.public_keys."0"' > \
+          /etc/ssh/authorized_keys.d/root
+        umount /mnt
+      '' else ''
+      ''}
     '';
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh

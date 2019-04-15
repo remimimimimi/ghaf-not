@@ -48,6 +48,11 @@ in
       default = false;
       description = "set a static ip of 10.0.2.15";
     };
+    not-os.cloud-init = mkOption {
+      type = types.bool;
+      default = false;
+      description = "enable reading public SSH key from config-2 drive";
+    };
   };
   config = {
     environment.systemPackages = lib.optional config.not-os.live pkgs.nix;
