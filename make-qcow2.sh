@@ -22,7 +22,7 @@
 
 EMBED_SITE="${EMBED_SITE:-_site}"
 
-nix-build --attr images
+nix-build --option substitute false --attr images
 cp result/image.raw .
 
 sudo losetup --show -f -P image.raw
