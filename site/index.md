@@ -18,7 +18,7 @@ components of a Linux-based operating system:
 - a rootfs (`config.system.build.squashfs`)
 
 Given the three above derivations, it is possible to generate the appropriate
-qemu-kvm invocation as a script, [runvm](runvm.html). runvm is the main entry
+qemu-kvm invocation as a script, [runvm](runvm.md). runvm is the main entry
 point to start playing and understanding not-os. Follow the link, and enjoy!
 
 <br />
