@@ -58,6 +58,7 @@ rec {
   dist = os.config.system.build.dist;
   extra-utils = os.config.system.build.extraUtils;
   shrunk = os.config.system.build.shrunk;
+  site = (import ./site);
 
   # Evaluate with nix-instantiate --eval --strict -A <attr>
   root-modules = os.config.system.build.rootModules;
