@@ -56,9 +56,8 @@ let
       }
 
       server {
-        listen 443;
+        listen 443 ssl;
         server_name noteed.com;
-        ssl on;
         ssl_certificate /var/dehydrated/certs/noteed.com/fullchain.pem;
         ssl_certificate_key /var/dehydrated/certs/noteed.com/privkey.pem;
 
@@ -121,8 +120,12 @@ in
 
       export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       mkdir -p /var/dehydrated
-      echo Registering to letsencrypt...
-      ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --register --accept-terms
+      # Do this only in the cloud.
+      ${if config.not-os.cloud-init then ''
+        echo Registering to letsencrypt...
+        ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --register --accept-terms
+      '' else ''
+      ''}
 
       # For Nginx
       mkdir -p /var/log/https /var/run /var/dehydrated/certs/noteed.com/
@@ -184,6 +187,7 @@ in
     "sv/https/run".source = pkgs.writeScript "https_run" ''
       #!/bin/sh
       echo Running Nginx HTTPS...
+      mkdir -p /var/log/nginx /var/cache/nginx
       exec ${pkgs.nginx}/bin/nginx -c ${nginx_https_config}
     '';
     #"sv/autohalt/run".source = pkgs.writeScript "autohalt" ''
@@ -195,6 +199,8 @@ in
     #  runit-init 0
     #'';
 
+    # Self-signed certificate. This is normally replaced by a Let's encrypt
+    # certificate once the image runs.
     "self-signed/fullchain.pem".source = pkgs.writeScript "fullchain.pem" ''
       -----BEGIN CERTIFICATE-----
       MIIGITCCBAmgAwIBAgIJALDa08Isxd/0MA0GCSqGSIb3DQEBCwUAMIGmMQswCQYD
