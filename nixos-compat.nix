@@ -4,7 +4,17 @@ with lib;
 
 {
   options = {
-    systemd.services = mkOption { };
+    systemd = {
+      globalEnvironment = mkOption {};
+      packages = mkOption {};
+      services = mkOption {
+        type = types.attrsOf types.unspecified;
+      };
+      sockets = mkOption {};
+      targets = mkOption {};
+      tmpfiles = mkOption {};
+      user = mkOption {};
+    };
   };
   config = {
   };
