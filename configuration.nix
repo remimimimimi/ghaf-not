@@ -11,8 +11,8 @@ in
 
 {
   imports = [ ./qemu.nix ];
-  not-os.live = false;
-  not-os.simpleStaticIp = false;
+  not-os.live = true;
+  not-os.simpleStaticIp = true;
   # For DO, set to true and remove the root SSH key below.
   not-os.cloud-init = false;
   environment.systemPackages = [ pkgs.utillinux request-cert ];

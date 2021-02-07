@@ -1,5 +1,8 @@
 #! /usr/bin/env bash
 
+# To use this script, the `live` and `simpleStaticIp` options must be set to
+# false (I think).
+
 IMAGE=$(nix-build --option substitute false --attr qcow2 --no-out-link)
 
 qemu-kvm \

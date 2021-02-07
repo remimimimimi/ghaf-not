@@ -125,12 +125,10 @@ let
       modprobe $x
     done
 
-    #mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
-    #chmod 755 /mnt/
-    #mkdir -p /mnt/nix/store/
-
     ${if config.not-os.live then ''
     echo Creating writable Nix store...
+    mount -t tmpfs root /mnt/ -o size=1G || exec ${shell}
+    chmod 755 /mnt/
     mkdir -p /mnt/nix/.ro-store /mnt/nix/.overlay-store /mnt/nix/store
     mount $root /mnt/nix/.ro-store -t squashfs
     mount tmpfs -t tmpfs /mnt/nix/.overlay-store -o size=1G
