@@ -33,6 +33,49 @@ $ nix-build site/ --attr all
 ```
 
 
+## Quick start
+
+Build the qemu-kvm invocation script (which will also build its dependencies):
+
+```
+$ nix-build --attr runvm
+```
+
+Run the resulting script:
+
+```
+$ ./result
+```
+
+This runs QEMU, which you can quit with `Ctrl-a x`. While it runs, in another
+terminal you can SSH into the VM:
+
+```
+$ ssh -p 2222 root@127.0.0.1
+```
+
+Note: this requires you have set your SSH public key in the `configuration.nix`
+file.
+
+You can also query the Nginx server (which has not much to serve currently):
+
+```
+$ curl http://127.0.0.1:9080
+$ curl -k https://127.0.0.1:9443
+```
+
+
+## Building only the kernel, initrd, and squashfs files
+
+```
+$ nix-build --attr dist
+$ ls result
+command-line  initrd  kernel  root.squashfs
+```
+
+See the files in `site/` for some notes about those files.
+
+
 ## Linux build slave
 
 (Removed in this branch.)
