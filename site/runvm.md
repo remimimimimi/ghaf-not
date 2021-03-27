@@ -20,7 +20,7 @@ rootfs &#x24B8;.
 @runvm@
 </code></pre>
 
-*Note: artifial newlines added.*
+*Note: artificial newlines added.*
 
 A kernel command line &#x24B9; is used to let the stage-1 know about the
 location of toplevel;
