@@ -19,12 +19,14 @@ components of a Linux-based operating system:
 
 Given the three above derivations, it is possible to generate the appropriate
 qemu-kvm invocation as a script, [runvm](runvm.md). runvm is the main entry
-point to start playing and understanding not-os. Follow the link, and enjoy!
+point to start playing and understanding not-os. Follow that link, or any one
+of those at the bottom of each page, and enjoy!
 
 <br />
 <br />
-*To follow along, you can clone the Git repository and run each `nix-build`
-command as they appear at the top of each page.*
+*To follow along, you can clone [the Git
+repository](https://github.com/noteed/not-os/) and run each `nix-build` command
+as they appear at the top of each page.*
 
 
 <hr />
