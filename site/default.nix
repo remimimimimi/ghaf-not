@@ -5,15 +5,14 @@
 #  nix-build site/ -A md.runvm
 
 { configuration ? import ../configuration.nix
-, nixpkgs ? <nixpkgs>
+, pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") { inherit system; config = {}; }
 , extraModules ? []
 , system ? builtins.currentSystem
 }:
 
 let
-  pkgs = import nixpkgs { inherit system; config = {}; };
   artefacts = import ../default.nix
-    { inherit configuration nixpkgs extraModules system; };
+    { inherit configuration extraModules system; };
 in rec
 {
   cmdline = artefacts.cmdline;

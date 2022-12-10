@@ -1,11 +1,11 @@
 { configuration ? import ./configuration.nix
-, nixpkgs ? <nixpkgs>
+ , pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") { inherit system; config = {}; }
+#, pkgs ? import <nixpkgs> { inherit system; config = {}; }
 , extraModules ? []
 , system ? builtins.currentSystem
 }:
 
 let
-  pkgs = import nixpkgs { inherit system; config = {}; };
   pkgsModule = rec {
     _file = ./default.nix;
     key = _file;
@@ -19,13 +19,13 @@ let
       ./stage-1.nix
       ./stage-2.nix
       ./runit.nix
-      <nixpkgs/nixos/modules/system/etc/etc.nix>
-      <nixpkgs/nixos/modules/system/activation/activation-script.nix>
-      <nixpkgs/nixos/modules/misc/nixpkgs.nix>
-      <nixpkgs/nixos/modules/system/boot/kernel.nix>
-      <nixpkgs/nixos/modules/misc/assertions.nix>
-      <nixpkgs/nixos/modules/misc/lib.nix>
-      <nixpkgs/nixos/modules/config/sysctl.nix>
+      (pkgs.path + "/nixos/modules/system/etc/etc.nix")
+      (pkgs.path + "/nixos/modules/system/activation/activation-script.nix")
+      (pkgs.path + "/nixos/modules/misc/nixpkgs.nix")
+      (pkgs.path + "/nixos/modules/system/boot/kernel.nix")
+      (pkgs.path + "/nixos/modules/misc/assertions.nix")
+      (pkgs.path + "/nixos/modules/misc/lib.nix")
+      (pkgs.path + "/nixos/modules/config/sysctl.nix")
       ./nixos-compat.nix
       pkgsModule
   ];

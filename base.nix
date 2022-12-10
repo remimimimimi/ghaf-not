@@ -4,7 +4,7 @@ with lib;
 with import ./templating.nix { inherit pkgs; };
 
 let
-  ext4 = pkgs.callPackage <nixpkgs/nixos/lib/make-ext4-fs.nix> ({
+  ext4 = pkgs.callPackage (pkgs.path + "/nixos/lib/make-ext4-fs.nix") ({
     storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
     volumeLabel = "TOPLEVEL";
   });
@@ -59,6 +59,7 @@ in
     nixpkgs.config = {
       packageOverrides = self: {
         utillinux = self.utillinux.override { systemd = null; };
+        #utillinux = self.utillinux.override { systemd = null; systemdSupport = false; };
         dhcpcd = self.dhcpcd.override { udev = null; };
       };
     };
@@ -147,7 +148,7 @@ in
       unset activationScript
     '';
     # nix-build -A squashfs && ls -lLh result
-    system.build.squashfs = pkgs.callPackage <nixpkgs/nixos/lib/make-squashfs.nix> {
+    system.build.squashfs = pkgs.callPackage (pkgs.path + "/nixos/lib/make-squashfs.nix") {
       storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
     };
     system.build.images = import ./build-image.nix { inherit config pkgs; };
