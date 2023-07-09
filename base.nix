@@ -1,13 +1,15 @@
-{ pkgs, config, lib, ... }:
-
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-with import ./templating.nix { inherit pkgs; };
-
-let
-  ext4 = pkgs.callPackage (pkgs.path + "/nixos/lib/make-ext4-fs.nix") ({
-    storePaths = [ config.system.build.toplevel config.system.build.bootStage2 ];
+with import ./templating.nix {inherit pkgs;}; let
+  ext4 = pkgs.callPackage (pkgs.path + "/nixos/lib/make-ext4-fs.nix") {
+    storePaths = [config.system.build.toplevel config.system.build.bootStage2];
     volumeLabel = "TOPLEVEL";
-  });
+  };
   syslinuxCfg = pkgs.writeText "syslinux.cfg" ''
     PROMPT 1
     TIMEOUT 1
@@ -17,8 +19,7 @@ let
       APPEND console=ttyS0 root=/dev/vda2
       INITRD initrd
   '';
-in
-{
+in {
   options = {
     system.build = mkOption {
       internal = true;
@@ -32,12 +33,13 @@ in
     hardware.firmware = mkOption {
       type = types.listOf types.package;
       default = [];
-      apply = list: pkgs.buildEnv {
-        name = "firmware";
-        paths = list;
-        pathsToLink = [ "/lib/firmware" ];
-        ignoreCollisions = true;
-      };
+      apply = list:
+        pkgs.buildEnv {
+          name = "firmware";
+          paths = list;
+          pathsToLink = ["/lib/firmware"];
+          ignoreCollisions = true;
+        };
     };
     not-os.live = mkOption {
       type = types.bool;
@@ -58,9 +60,9 @@ in
     environment.systemPackages = lib.optional config.not-os.live pkgs.nix;
     nixpkgs.config = {
       packageOverrides = self: {
-        utillinux = self.utillinux.override { systemd = null; };
+        utillinux = self.utillinux.override {systemd = null;};
         #utillinux = self.utillinux.override { systemd = null; systemdSupport = false; };
-        dhcpcd = self.dhcpcd.override { udev = null; };
+        dhcpcd = self.dhcpcd.override {udev = null;};
       };
     };
     environment.etc = {
@@ -108,17 +110,24 @@ in
         nogroup:x:65534
       '';
       "ssh/ssh_host_rsa_key.pub".source = ./ssh/ssh_host_rsa_key.pub;
-      "ssh/ssh_host_rsa_key" = { mode = "0600"; source = ./ssh/ssh_host_rsa_key; };
+      "ssh/ssh_host_rsa_key" = {
+        mode = "0600";
+        source = ./ssh/ssh_host_rsa_key;
+      };
       "ssh/ssh_host_ed25519_key.pub".source = ./ssh/ssh_host_ed25519_key.pub;
-      "ssh/ssh_host_ed25519_key" = { mode = "0600"; source = ./ssh/ssh_host_ed25519_key; };
+      "ssh/ssh_host_ed25519_key" = {
+        mode = "0600";
+        source = ./ssh/ssh_host_ed25519_key;
+      };
     };
-    boot.kernelParams = [ ];
+    boot.kernelParams = [];
     boot.kernelPackages = pkgs.linuxPackages;
-    system.build.earlyMountScript = pkgs.writeScript "dummy" ''
-    '';
+    system.build.earlyMountScript =
+      pkgs.writeScript "dummy" ''
+      '';
 
     system.build.runvm =
-      writeInterpolatedFile "runvm" { inherit pkgs config; } ./strings/runvm.sh;
+      writeInterpolatedFile "runvm" {inherit pkgs config;} ./strings/runvm.sh;
 
     system.build.dist = pkgs.runCommand "dist" {} ''
       mkdir $out
@@ -137,84 +146,104 @@ in
     '';
 
     # nix-build -A system.build.toplevel && du -h $(nix-store -qR result) --max=0 -BM|sort -n
-    system.build.toplevel = pkgs.runCommand "toplevel" {
-      activationScript = config.system.activationScripts.script;
-    } ''
-      mkdir $out
-      ln -s ${config.system.path} $out/sw
-      echo "$activationScript" > $out/activate
-      substituteInPlace $out/activate --subst-var out
-      chmod u+x $out/activate
-      unset activationScript
-    '';
+    system.build.toplevel =
+      pkgs.runCommand "toplevel" {
+        activationScript = config.system.activationScripts.script;
+      } ''
+        mkdir $out
+        ln -s ${config.system.path} $out/sw
+        echo "$activationScript" > $out/activate
+        substituteInPlace $out/activate --subst-var out
+        chmod u+x $out/activate
+        unset activationScript
+      '';
     # nix-build -A squashfs && ls -lLh result
     system.build.squashfs = pkgs.callPackage (pkgs.path + "/nixos/lib/make-squashfs.nix") {
-      storeContents = [ config.system.build.toplevel config.system.build.bootStage2 ];
+      storeContents = [config.system.build.toplevel config.system.build.bootStage2];
     };
-    system.build.images = import ./build-image.nix { inherit config pkgs; };
+    system.build.images = import ./build-image.nix {inherit config pkgs;};
     system.build.ext4 = ext4;
     system.build.syslinux = syslinuxCfg;
-    system.build.boot = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
-      name = "boot";
+    system.build.boot = pkgs.callPackage ({
+      stdenv,
+      dosfstools,
+      e2fsprogs,
+      mtools,
+      libfaketime,
+      utillinux,
+      syslinux,
+    }:
+      stdenv.mkDerivation {
+        name = "boot";
 
-      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
+        nativeBuildInputs = [dosfstools e2fsprogs mtools libfaketime utillinux syslinux];
 
-      buildCommand = ''
-        # Create a FAT32 /boot partition of suitable size into boot.raw
-        # 10M is currently enough.
-        truncate -s $((10 * 1024 * 1024)) boot.raw
-        faketime "1970-01-01 00:00:00" mkfs.vfat -F 16 -i 0x20000000 -n BOOT boot.raw
+        buildCommand = ''
+          # Create a FAT32 /boot partition of suitable size into boot.raw
+          # 10M is currently enough.
+          truncate -s $((10 * 1024 * 1024)) boot.raw
+          faketime "1970-01-01 00:00:00" mkfs.vfat -F 16 -i 0x20000000 -n BOOT boot.raw
 
-        # Populate the files intended for /boot
-        mkdir -p boot/
-        cp ${config.system.build.syslinux} boot/syslinux.cfg
-        cp ${config.system.build.kernel}/bzImage boot/vmlinuz
-        cp ${config.system.build.initialRamdisk}/initrd boot/initrd
+          # Populate the files intended for /boot
+          mkdir -p boot/
+          cp ${config.system.build.syslinux} boot/syslinux.cfg
+          cp ${config.system.build.kernel}/bzImage boot/vmlinuz
+          cp ${config.system.build.initialRamdisk}/initrd boot/initrd
 
-        # Copy the populated /boot into the SD image
-        (cd boot; mcopy -bpsvm -i ../boot.raw ./* ::)
-        syslinux --directory /boot --install boot.raw
-        cp boot.raw $out
+          # Copy the populated /boot into the SD image
+          (cd boot; mcopy -bpsvm -i ../boot.raw ./* ::)
+          syslinux --directory /boot --install boot.raw
+          cp boot.raw $out
+        '';
+      }) {};
+    system.build.raw = pkgs.callPackage ({
+      stdenv,
+      dosfstools,
+      e2fsprogs,
+      mtools,
+      libfaketime,
+      utillinux,
+      syslinux,
+    }:
+      stdenv.mkDerivation {
+        name = "raw";
+
+        nativeBuildInputs = [dosfstools e2fsprogs mtools libfaketime utillinux syslinux];
+
+        # This is similar to nixpkgs/nixos/modules/installer/cd-dvd/sd-image.nix.
+        # Could be factored if this file is included in nixpkgs.
+        buildCommand = ''
+          export img=$out
+
+          # Create the image file sized to fit the rootfs, plus 20M of slack
+          rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
+          bootSizeBlocks=$(du -B 512 --apparent-size ${config.system.build.boot} | awk '{ print $1 }')
+          imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
+          truncate -s $imageSize $img
+
+          # type=b is 'W95 FAT32', type=83 is 'Linux'.
+          sfdisk $img <<EOF
+              label: dos
+              label-id: 0x20000000
+
+              start=1M, size=$bootSizeBlocks, type=b, bootable
+              start=11M, type=83
+          EOF
+          # TODO The 11M above should be computed with 1M (preceding line) + bootSize.
+
+          # Copy the rootfs into image
+          eval $(partx $img -o START,SECTORS --nr 2 --pairs)
+          dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
+
+          eval $(partx $img -o START,SECTORS --nr 1 --pairs)
+          dd conv=notrunc if=${config.system.build.boot} of=$img seek=$START count=$SECTORS
+          dd if=${syslinux}/share/syslinux/mbr.bin of=$img bs=440 count=1 conv=notrunc
+        '';
+      }) {};
+    system.build.qcow2 =
+      pkgs.runCommand "qcow2" {
+      } ''
+        ${pkgs.qemu}/bin/qemu-img convert -f raw -O qcow2 ${config.system.build.raw} $out
       '';
-    }) {};
-    system.build.raw = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs, mtools, libfaketime, utillinux, syslinux }: stdenv.mkDerivation {
-      name = "raw";
-
-      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux syslinux ];
-
-      # This is similar to nixpkgs/nixos/modules/installer/cd-dvd/sd-image.nix.
-      # Could be factored if this file is included in nixpkgs.
-      buildCommand = ''
-        export img=$out
-
-        # Create the image file sized to fit the rootfs, plus 20M of slack
-        rootSizeBlocks=$(du -B 512 --apparent-size ${ext4} | awk '{ print $1 }')
-        bootSizeBlocks=$(du -B 512 --apparent-size ${config.system.build.boot} | awk '{ print $1 }')
-        imageSize=$((rootSizeBlocks * 512 + bootSizeBlocks * 512 + 20 * 1024 * 1024))
-        truncate -s $imageSize $img
-
-        # type=b is 'W95 FAT32', type=83 is 'Linux'.
-        sfdisk $img <<EOF
-            label: dos
-            label-id: 0x20000000
-
-            start=1M, size=$bootSizeBlocks, type=b, bootable
-            start=11M, type=83
-        EOF
-        # TODO The 11M above should be computed with 1M (preceding line) + bootSize.
-
-        # Copy the rootfs into image
-        eval $(partx $img -o START,SECTORS --nr 2 --pairs)
-        dd conv=notrunc if=${ext4} of=$img seek=$START count=$SECTORS
-
-        eval $(partx $img -o START,SECTORS --nr 1 --pairs)
-        dd conv=notrunc if=${config.system.build.boot} of=$img seek=$START count=$SECTORS
-        dd if=${syslinux}/share/syslinux/mbr.bin of=$img bs=440 count=1 conv=notrunc
-      '';
-    }) {};
-    system.build.qcow2 = pkgs.runCommand "qcow2" {
-    } ''
-      ${pkgs.qemu}/bin/qemu-img convert -f raw -O qcow2 ${config.system.build.raw} $out
-    '';
   };
 }

@@ -1,8 +1,10 @@
-{ lib, pkgs, config, ... }:
-
-with lib;
-
 {
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+with lib; {
   options = {
     boot = {
       devSize = mkOption {
@@ -19,22 +21,23 @@ with lib;
         default = "25%";
         example = "256m";
         type = types.str;
-       };
+      };
     };
   };
   config = {
-    system.build.bootStage2 = pkgs.runCommand "stage-2" {
-      text = ./stage-2-init.sh;
-      passAsFile = [ "text" ];
-      preferLocalBuild = true;
-      allowSubstitutes = false;
-    } ''
-      cp ${./stage-2-init.sh} "$out"
-      substituteInPlace $out --subst-var shell
-      substituteInPlace $out --subst-var-by stage-2 $out
-      substituteInPlace $out --subst-var-by path ${config.system.path}
-      substituteInPlace $out --subst-var-by toplevel ${config.system.build.toplevel}
-      chmod +x "$out"
-    '';
+    system.build.bootStage2 =
+      pkgs.runCommand "stage-2" {
+        text = ./stage-2-init.sh;
+        passAsFile = ["text"];
+        preferLocalBuild = true;
+        allowSubstitutes = false;
+      } ''
+        cp ${./stage-2-init.sh} "$out"
+        substituteInPlace $out --subst-var shell
+        substituteInPlace $out --subst-var-by stage-2 $out
+        substituteInPlace $out --subst-var-by path ${config.system.path}
+        substituteInPlace $out --subst-var-by toplevel ${config.system.build.toplevel}
+        chmod +x "$out"
+      '';
   };
 }

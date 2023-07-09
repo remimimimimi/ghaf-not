@@ -1,13 +1,13 @@
-{ config, lib, pkgs, ... }:
-
-# based heavily on https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/config/system-path.nix
-
-with lib;
-
-let
-  requiredPackages = with pkgs; [ utillinux coreutils iproute iputils procps curl bashInteractive runit ];
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+# based heavily on https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/config/system-path.nix
+with lib; let
+  requiredPackages = with pkgs; [utillinux coreutils iproute iputils procps curl bashInteractive runit];
+in {
   options = {
     environment = {
       systemPackages = mkOption {
@@ -23,8 +23,8 @@ in
       };
       extraOutputsToInstall = mkOption {
         type = types.listOf types.str;
-        default = [ ];
-        example = [ "doc" "info" "docdev" ];
+        default = [];
+        example = ["doc" "info" "docdev"];
         description = "List of additional package outputs to be symlinked into <filename>/run/current-system/sw</filename>.";
       };
     };
@@ -34,7 +34,7 @@ in
   };
   config = {
     environment.systemPackages = requiredPackages;
-    environment.pathsToLink = [ "/bin" ];
+    environment.pathsToLink = ["/bin"];
     system.path = pkgs.buildEnv {
       name = "system-path";
       paths = config.environment.systemPackages;

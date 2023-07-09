@@ -3,16 +3,19 @@
 #
 # Example build instruction:
 #  nix-build site/ -A md.runvm
-
-{ configuration ? import ../configuration.nix
-, pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") { inherit system; config = {}; }
-, extraModules ? []
-, system ? builtins.currentSystem
-}:
-
-let
-  artefacts = import ../default.nix
-    { inherit configuration extraModules system; };
+{
+  configuration ? import ../configuration.nix,
+  pkgs ?
+    import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") {
+      inherit system;
+      config = {};
+    },
+  extraModules ? [],
+  system ? builtins.currentSystem,
+}: let
+  artefacts =
+    import ../default.nix
+    {inherit configuration extraModules system;};
 in rec
 {
   cmdline = artefacts.cmdline;
@@ -23,20 +26,20 @@ in rec
     sed -n -e '/^<hr/,//p' ${./index.md} > $out
   '');
   hypertext.runvm = builtins.readFile (pkgs.runCommand "runvm.sh" {} ''
-sed \
--e \
-'s@.{config.system.build.kernel}/bzImage@<a href=kernel.html>\0 \&#x24B6</a>@' \
--e \
-'s@.{config.system.build.initialRamdisk}/initrd@<a href=initrd.html>\0 \&#x24B7</a>@' \
--e \
-'s@\(.{config.system.build.squashfs}\),@<a href=rootfs.html>\1 \&#x24B8,\n    </a>@' \
--e \
-'s@\(.{toString config.boot.kernelParams}\)@<a href=cmdline.html>\1 \&#x24B9\n   </a>@' \
--e \
-'s@10.0.2.2,@\0\n    </a>@' \
-${../strings/runvm.sh} > $out
-echo >> $out
-echo -n $out >> $out
+    sed \
+    -e \
+    's@.{config.system.build.kernel}/bzImage@<a href=kernel.html>\0 \&#x24B6</a>@' \
+    -e \
+    's@.{config.system.build.initialRamdisk}/initrd@<a href=initrd.html>\0 \&#x24B7</a>@' \
+    -e \
+    's@\(.{config.system.build.squashfs}\),@<a href=rootfs.html>\1 \&#x24B8,\n    </a>@' \
+    -e \
+    's@\(.{toString config.boot.kernelParams}\)@<a href=cmdline.html>\1 \&#x24B9\n   </a>@' \
+    -e \
+    's@10.0.2.2,@\0\n    </a>@' \
+    ${../strings/runvm.sh} > $out
+    echo >> $out
+    echo -n $out >> $out
   '');
 
   md.index = pkgs.writeText "index" (builtins.readFile ./index.md);

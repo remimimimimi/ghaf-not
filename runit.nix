@@ -1,6 +1,9 @@
-{ pkgs, lib, config, ... }:
-
-let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
   sshd_config = pkgs.writeText "sshd_config" ''
     HostKey /etc/ssh/ssh_host_rsa_key
     HostKey /etc/ssh/ssh_host_ed25519_key
@@ -73,22 +76,21 @@ let
         }
       }
     }
-    '';
-  compat = pkgs.runCommand "runit-compat" {} ''
-    mkdir -p $out/bin/
-    cat << EOF > $out/bin/poweroff
-#!/bin/sh
-exec runit-init 0
-EOF
-    cat << EOF > $out/bin/reboot
-#!/bin/sh
-exec runit-init 6
-EOF
-    chmod +x $out/bin/{poweroff,reboot}
   '';
-in
-{
-  environment.systemPackages = [ compat pkgs.socat ];
+  compat = pkgs.runCommand "runit-compat" {} ''
+        mkdir -p $out/bin/
+        cat << EOF > $out/bin/poweroff
+    #!/bin/sh
+    exec runit-init 0
+    EOF
+        cat << EOF > $out/bin/reboot
+    #!/bin/sh
+    exec runit-init 6
+    EOF
+        chmod +x $out/bin/{poweroff,reboot}
+  '';
+in {
+  environment.systemPackages = [compat pkgs.socat];
   environment.etc = {
     "runit/1".source = pkgs.writeScript "1" ''
       #!${pkgs.stdenv.shell}
@@ -101,19 +103,23 @@ in
       touch /etc/runit/stopit
       chmod 0 /etc/runit/stopit
 
-      ${if config.not-os.simpleStaticIp then ''
-        echo Setting static IP address...
-        ip addr add 10.0.2.15 dev eth0
-        ip link set eth0 up
-        ip route add 10.0.2.0/24 dev eth0
-        ip route add default via 10.0.2.2 dev eth0
-      '' else ''
-        echo Setting dynamic IP address...
-        touch /etc/dhcpcd.conf
-        mkdir -p /var/db/dhcpcd
-        ip link set up eth0
-        ${pkgs.dhcpcd}/sbin/dhcpcd eth0 -4 --waitip
-      ''}
+      ${
+        if config.not-os.simpleStaticIp
+        then ''
+          echo Setting static IP address...
+          ip addr add 10.0.2.15 dev eth0
+          ip link set eth0 up
+          ip route add 10.0.2.0/24 dev eth0
+          ip route add default via 10.0.2.2 dev eth0
+        ''
+        else ''
+          echo Setting dynamic IP address...
+          touch /etc/dhcpcd.conf
+          mkdir -p /var/db/dhcpcd
+          ip link set up eth0
+          ${pkgs.dhcpcd}/sbin/dhcpcd eth0 -4 --waitip
+        ''
+      }
 
       echo Running ntpdate...
       ${pkgs.ntp}/bin/ntpdate pool.ntp.org
@@ -121,11 +127,15 @@ in
       export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       mkdir -p /var/dehydrated
       # Do this only in the cloud.
-      ${if config.not-os.cloud-init then ''
-        echo Registering to letsencrypt...
-        ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --register --accept-terms
-      '' else ''
-      ''}
+      ${
+        if config.not-os.cloud-init
+        then ''
+          echo Registering to letsencrypt...
+          ${pkgs.dehydrated}/bin/dehydrated --config /etc/letsencrypt/dehydrated.conf --register --accept-terms
+        ''
+        else ''
+        ''
+      }
 
       # For Nginx
       mkdir -p /var/log/https /var/run /var/dehydrated/certs/noteed.com/
@@ -133,17 +143,21 @@ in
       cp /etc/self-signed/privkey.pem /var/dehydrated/certs/noteed.com/
 
       # Pseudo cloud config: copy the public SSH key in place.
-      ${if config.not-os.cloud-init then ''
-        echo Reading config-2 drive to set the root public SSH key...
-        mkdir /mnt
-        mount /dev/vdb /mnt
-        mkdir -p /etc/ssh/authorized_keys.d/
-        cat /mnt/openstack/latest/meta_data.json | \
-          ${pkgs.jq}/bin/jq -r '.public_keys."0"' > \
-          /etc/ssh/authorized_keys.d/root
-        umount /mnt
-      '' else ''
-      ''}
+      ${
+        if config.not-os.cloud-init
+        then ''
+          echo Reading config-2 drive to set the root public SSH key...
+          mkdir /mnt
+          mount /dev/vdb /mnt
+          mkdir -p /etc/ssh/authorized_keys.d/
+          cat /mnt/openstack/latest/meta_data.json | \
+            ${pkgs.jq}/bin/jq -r '.public_keys."0"' > \
+            /etc/ssh/authorized_keys.d/root
+          umount /mnt
+        ''
+        else ''
+        ''
+      }
     '';
     "runit/2".source = pkgs.writeScript "2" ''
       #!/bin/sh

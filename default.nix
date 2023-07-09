@@ -1,43 +1,48 @@
-{ configuration ? import ./configuration.nix
- , pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") { inherit system; config = {}; }
-#, pkgs ? import <nixpkgs> { inherit system; config = {}; }
-, extraModules ? []
-, system ? builtins.currentSystem
-}:
-
-let
+{
+  configuration ? import ./configuration.nix,
+  pkgs ?
+    import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") {
+      inherit system;
+      config = {};
+    },
+  #, pkgs ? import <nixpkgs> { inherit system; config = {}; }
+  extraModules ? [],
+  system ? builtins.currentSystem,
+}: let
   pkgsModule = rec {
     _file = ./default.nix;
     key = _file;
     config = {
-      nixpkgs.localSystem = { inherit system; };
+      nixpkgs.localSystem = {inherit system;};
     };
   };
+
   baseModules = [
-      ./base.nix
-      ./system-path.nix
-      ./stage-1.nix
-      ./stage-2.nix
-      ./runit.nix
-      (pkgs.path + "/nixos/modules/system/etc/etc.nix")
-      (pkgs.path + "/nixos/modules/system/activation/activation-script.nix")
-      (pkgs.path + "/nixos/modules/misc/nixpkgs.nix")
-      (pkgs.path + "/nixos/modules/system/boot/kernel.nix")
-      (pkgs.path + "/nixos/modules/misc/assertions.nix")
-      (pkgs.path + "/nixos/modules/misc/lib.nix")
-      (pkgs.path + "/nixos/modules/config/sysctl.nix")
-      ./nixos-compat.nix
-      pkgsModule
+    ./base.nix
+    ./system-path.nix
+    ./stage-1.nix
+    ./stage-2.nix
+    ./runit.nix
+    (pkgs.path + "/nixos/modules/system/etc/etc.nix")
+    (pkgs.path + "/nixos/modules/system/activation/activation-script.nix")
+    (pkgs.path + "/nixos/modules/misc/nixpkgs.nix")
+    (pkgs.path + "/nixos/modules/system/boot/kernel.nix")
+    (pkgs.path + "/nixos/modules/misc/assertions.nix")
+    (pkgs.path + "/nixos/modules/misc/lib.nix")
+    (pkgs.path + "/nixos/modules/config/sysctl.nix")
+    ./nixos-compat.nix
+    pkgsModule
   ];
-  evalConfig = modules: pkgs.lib.evalModules {
-    prefix = [];
-    check = true;
-    modules = modules ++ baseModules ++ extraModules;
-    args = {};
-  };
-in
-rec {
-  os = evalConfig [ configuration ];
+
+  evalConfig = modules:
+    pkgs.lib.evalModules {
+      prefix = [];
+      check = true;
+      modules = modules ++ baseModules ++ extraModules;
+      args = {};
+    };
+in rec {
+  os = evalConfig [configuration];
   config = os.config;
 
   # Build with nix-build -A <attr>
@@ -58,9 +63,4 @@ rec {
   dist = os.config.system.build.dist;
   extra-utils = os.config.system.build.extraUtils;
   shrunk = os.config.system.build.shrunk;
-  site = (import ./site);
-
-  # Evaluate with nix-instantiate --eval --strict -A <attr>
-  root-modules = os.config.system.build.rootModules;
-  cmdline = os.config.boot.kernelParams;
 }

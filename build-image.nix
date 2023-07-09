@@ -1,9 +1,7 @@
-{ pkgs
-, config
-}:
-
-let
-
+{
+  pkgs,
+  config,
+}: let
   prepareImage = ''
     dd if=/dev/zero of=image.raw bs=1M seek=511 count=1
     dd if=/dev/zero of=image.raw bs=512 count=2049 conv=notrunc
@@ -60,9 +58,12 @@ let
 
     ${pkgs.utillinux}/bin/umount /mnt
   '';
-
-in pkgs.vmTools.runInLinuxVM (
-  pkgs.runCommand "build-image"
-    { preVM = prepareImage; postVM = copyImage; }
+in
+  pkgs.vmTools.runInLinuxVM (
+    pkgs.runCommand "build-image"
+    {
+      preVM = prepareImage;
+      postVM = copyImage;
+    }
     buildImage
-)
+  )

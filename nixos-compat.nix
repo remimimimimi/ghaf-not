@@ -1,8 +1,9 @@
-{ config, lib, ... }:
-
-with lib;
-
 {
+  config,
+  lib,
+  ...
+}:
+with lib; {
   options = {
     systemd = {
       globalEnvironment = mkOption {};
