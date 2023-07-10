@@ -188,7 +188,7 @@ in {
     "sv/rngd/run".source = pkgs.writeScript "rngd" ''
       #!/bin/sh
       echo Running rngd...
-      export PATH=$PATH:${pkgs.rng_tools}/bin
+      export PATH=$PATH:${pkgs.rng-tools}/bin
       exec rngd -f -r /dev/hwrng
     '';
     #"sv/nix/run".source = pkgs.writeScript "nix" ''
