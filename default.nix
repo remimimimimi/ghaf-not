@@ -21,7 +21,7 @@
     ./stage-1.nix
     ./stage-2.nix
     ./runit.nix
-    (nixosModulesPath + "/system/etc/etc.nix")
+    ./etc.nix
     (nixosModulesPath + "/system/activation/activation-script.nix")
     (nixosModulesPath + "/misc/nixpkgs.nix")
     (nixosModulesPath + "/system/boot/kernel.nix")
