@@ -17,19 +17,21 @@
     };
   };
 
+  nixosModulesPath = pkgs.path + "/nixos/modules";
+
   baseModules = [
     ./base.nix
     ./system-path.nix
     ./stage-1.nix
     ./stage-2.nix
     ./runit.nix
-    (pkgs.path + "/nixos/modules/system/etc/etc.nix")
-    (pkgs.path + "/nixos/modules/system/activation/activation-script.nix")
-    (pkgs.path + "/nixos/modules/misc/nixpkgs.nix")
-    (pkgs.path + "/nixos/modules/system/boot/kernel.nix")
-    (pkgs.path + "/nixos/modules/misc/assertions.nix")
-    (pkgs.path + "/nixos/modules/misc/lib.nix")
-    (pkgs.path + "/nixos/modules/config/sysctl.nix")
+    (nixosModulesPath + "/system/etc/etc.nix")
+    (nixosModulesPath + "/system/activation/activation-script.nix")
+    (nixosModulesPath + "/misc/nixpkgs.nix")
+    (nixosModulesPath + "/system/boot/kernel.nix")
+    (nixosModulesPath + "/misc/assertions.nix")
+    (nixosModulesPath + "/misc/lib.nix")
+    (nixosModulesPath + "/config/sysctl.nix")
     ./nixos-compat.nix
     pkgsModule
   ];
