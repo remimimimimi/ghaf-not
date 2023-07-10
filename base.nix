@@ -60,7 +60,7 @@ in {
     environment.systemPackages = lib.optional config.not-os.live pkgs.nix;
     nixpkgs.config = {
       packageOverrides = self: {
-        utillinux = self.utillinux.override {systemd = null;};
+        utillinux = self.utillinux.override {systemdSupport = false;};
         #utillinux = self.utillinux.override { systemd = null; systemdSupport = false; };
         dhcpcd = self.dhcpcd.override {udev = null;};
       };
