@@ -1,10 +1,6 @@
 {
   configuration ? import ./configuration.nix,
-  pkgs ?
-    import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/dea79b56f7218ba75653260232c07d2f5ad2f109.tar.gz") {
-      inherit system;
-      config = {};
-    },
+  pkgs,
   #, pkgs ? import <nixpkgs> { inherit system; config = {}; }
   extraModules ? [],
   system ? builtins.currentSystem,
@@ -38,10 +34,7 @@
 
   evalConfig = modules:
     pkgs.lib.evalModules {
-      prefix = [];
-      check = true;
       modules = modules ++ baseModules ++ extraModules;
-      args = {};
     };
 in rec {
   os = evalConfig [configuration];
