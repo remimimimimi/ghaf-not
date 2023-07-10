@@ -24,15 +24,6 @@ generate the appropriate qemu-kvm invocation as a script, `runvm`.
 The `tests/` directory shows also how to run a VM using the Nix testing
 infrastructure.
 
-In addition to the three above derivations, a few intermediate results are
-defined in `default.nix` to make it easy to explore this project. They are also
-described in the `site/` directory, which itself can be built with
-
-```
-$ nix-build site/ --attr all
-```
-
-
 ## Quick start
 
 Build the qemu-kvm invocation script (which will also build its dependencies):
@@ -72,9 +63,6 @@ $ nix-build --attr dist
 $ ls result
 command-line  initrd  kernel  root.squashfs
 ```
-
-See the files in `site/` for some notes about those files.
-
 
 ## Linux build slave
 

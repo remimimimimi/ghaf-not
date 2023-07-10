@@ -20,8 +20,6 @@
 
 # This require the syslinux package, e.g. with nix-shell -p.
 
-EMBED_SITE="${EMBED_SITE:-_site}"
-
 nix-build --option substitute false --attr images
 cp result/image.raw .
 
@@ -39,7 +37,6 @@ fi
 
 mkdir -p rootfs-mnt
 sudo mount "${DEV1}" rootfs-mnt
-sudo rsync -a "${EMBED_SITE}/" rootfs-mnt/var/www/noteed.com/
 
 sudo umount rootfs-mnt
 losetup -d ${DEV}

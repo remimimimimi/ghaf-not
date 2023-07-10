@@ -37,11 +37,6 @@
     ${pkgs.squashfsTools}/bin/unsquashfs -d /mnt/nix/store ${config.system.build.squashfs}
     # cp ${config.system.build.ext4} image.ext4
 
-
-    # TODO
-    # cp -a "DOLLAR{EMBED_SITE}" /mnt/var/www/noteed.com
-    mkdir -p /mnt/var/www/{acme/.well-known/acme-challenge,noteed.com}
-    echo Hello. > /mnt/var/www/noteed.com/index.html
     echo "LABEL=rootfs / auto defaults 1 1" > /mnt/etc/fstab
 
     cat > /mnt/boot/extlinux/extlinux.conf <<EOF
